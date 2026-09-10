@@ -65,3 +65,42 @@ detect_distro() {
         log_ok "Detected supported distribution: ${DETECTED_OS_NAME} (${DETECTED_DISTRO})"
     fi
 }
+
+is_virtual_machine() {
+    if hostnamectl 2>/dev/null | grep -qi 'Chassis:.*vm'; then
+        return 0
+    fi
+    if command -v systemd-detect-virt >/dev/null 2>&1; then
+        local virt
+        virt="$(systemd-detect-virt 2>/dev/null || true)"
+        if [[ -n "${virt}" && "${virt}" != "none" ]]; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+setup_vm_environment() {
+    log_info "Virtual Machine detected. Setting up VM optimizations..."
+
+    # Install qemu-guest-agent / utils
+    local qemu_pkg="qemu-guest-agent"
+    if declare -f pkg_install >/dev/null 2>&1; then
+        pkg_install "${qemu_pkg}" || log_warn "Could not install ${qemu_pkg}."
+    fi
+
+    if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
+        sudo systemctl enable --now qemu-guest-agent.service 2>&1 | tee -a "${LOG_FILE}" || true
+    fi
+
+    # Fix upside-down mouse pointer in Wayland VMs
+    if ! grep -q "^WLR_NO_HARDWARE_CURSORS=" /etc/environment 2>/dev/null; then
+        log_info "Configuring WLR_NO_HARDWARE_CURSORS=1 in /etc/environment (fixes upside-down pointer)..."
+        echo "WLR_NO_HARDWARE_CURSORS=1" | sudo tee -a /etc/environment >/dev/null
+        log_ok "Added WLR_NO_HARDWARE_CURSORS=1 to /etc/environment."
+    else
+        log_ok "WLR_NO_HARDWARE_CURSORS=1 already set in /etc/environment."
+    fi
+
+    export WLR_NO_HARDWARE_CURSORS=1
+}

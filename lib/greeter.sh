@@ -23,19 +23,28 @@ check_greeter_binaries() {
     return $missing
 }
 
-# Resolve greeter user (usually 'greeter' or 'greetd')
+# Resolve greeter user (usually 'greetd' or 'greeter')
 resolve_greetd_user() {
-    if id -u greeter >/dev/null 2>&1; then
-        echo "greeter"
-    elif id -u greetd >/dev/null 2>&1; then
+    if id -u greetd >/dev/null 2>&1; then
         echo "greetd"
+    elif id -u greeter >/dev/null 2>&1; then
+        echo "greeter"
     else
+        sudo useradd -r -s /usr/bin/nologin -d /var/lib/noctalia-greeter greeter 2>/dev/null || true
         echo "greeter"
     fi
 }
 
 install_noctalia_greeter() {
     log_info "Configuring greetd with noctalia-greeter..."
+
+    # Ensure greetd and noctalia-greeter packages are installed first
+    if ! command -v greetd >/dev/null 2>&1 || ! command -v noctalia-greeter-session >/dev/null 2>&1; then
+        log_info "Required greeter packages missing. Installing..."
+        if declare -f install_greeter_packages >/dev/null 2>&1; then
+            install_greeter_packages
+        fi
+    fi
 
     # Ensure greetd directory exists
     sudo mkdir -p /etc/greetd
@@ -62,32 +71,59 @@ install_noctalia_greeter() {
         session_bin="/usr/bin/noctalia-greeter-session"
     fi
 
+    # Detect exact desktop session name (e.g. "Mango")
+    local session_name="Mango"
+    if command -v noctalia-greeter >/dev/null 2>&1; then
+        local detected_session
+        detected_session="$(noctalia-greeter sessions 2>/dev/null | grep -iE '^mango$' | head -n 1 || true)"
+        if [[ -n "${detected_session}" ]]; then
+            session_name="${detected_session}"
+        fi
+    fi
+
     # Ensure greeter state directory exists
     local state_dir="/var/lib/noctalia-greeter"
     sudo mkdir -p "${state_dir}"
     if id -u "${greeter_user}" >/dev/null 2>&1; then
+        sudo usermod -a -G video,input "${greeter_user}" 2>/dev/null || true
         sudo chown -R "${greeter_user}:${greeter_user}" "${state_dir}" || true
         sudo chmod 0750 "${state_dir}" || true
     fi
 
     # Write greetd configuration
-    log_info "Writing /etc/greetd/config.toml pointing to ${session_bin}..."
+    log_info "Writing /etc/greetd/config.toml pointing to ${session_bin} (${session_name})..."
     sudo tee /etc/greetd/config.toml >/dev/null <<EOF
 [terminal]
 vt = 1
 
 [default_session]
-command = "${session_bin} -- --session mango"
+command = "${session_bin} -- --session ${session_name}"
 user = "${greeter_user}"
 EOF
 
     log_ok "/etc/greetd/config.toml updated successfully."
 
+    # Disable competing display managers (lightdm, sddm, gdm, lxdm)
+    for dm in lightdm sddm gdm lxdm; do
+        if systemctl list-unit-files "${dm}.service" 2>/dev/null | grep -q "${dm}"; then
+            if systemctl is-enabled "${dm}.service" &>/dev/null; then
+                log_info "Disabling competing display manager: ${dm}.service..."
+                sudo systemctl disable --now "${dm}.service" 2>&1 | tee -a "${LOG_FILE}" || true
+            fi
+        fi
+    done
+    sudo systemctl disable --now display-manager.service 2>/dev/null || true
+
     # Enable greetd systemd service if systemd is active
     if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
         log_info "Enabling greetd.service via systemctl..."
-        sudo systemctl enable greetd.service 2>&1 | tee -a "${LOG_FILE}" || log_warn "Failed to enable greetd.service."
-        log_ok "greetd.service enabled."
+        if sudo systemctl enable --force greetd.service 2>&1 | tee -a "${LOG_FILE}"; then
+            sudo systemctl set-default graphical.target 2>&1 | tee -a "${LOG_FILE}" || true
+            log_ok "greetd.service enabled successfully as default display manager."
+        else
+            log_err "Failed to enable greetd.service."
+            return 1
+        fi
     fi
 
     log_ok "Noctalia greeter + greetd configuration complete."
@@ -114,6 +150,15 @@ remove_noctalia_greeter() {
         sudo rm -f /etc/greetd/config.toml
         log_ok "Removed /etc/greetd/config.toml."
     fi
+
+    # Restore alternative display manager if present
+    for dm in lightdm sddm gdm; do
+        if systemctl list-unit-files "${dm}.service" 2>/dev/null | grep -q "${dm}"; then
+            log_info "Re-enabling ${dm}.service..."
+            sudo systemctl enable "${dm}.service" 2>&1 | tee -a "${LOG_FILE}" || true
+            break
+        fi
+    done
 
     log_ok "Noctalia greeter setup removed successfully."
 }

@@ -101,9 +101,10 @@ install_core_packages() {
 }
 
 install_greeter_packages() {
-    log_info "Checking / installing greetd packages..."
+    log_info "Checking / installing greetd and noctalia-greeter packages..."
     local greeter_pkgs=(
         greetd
+        noctalia-greeter
     )
     pkg_install "${greeter_pkgs[@]}"
 }

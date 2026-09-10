@@ -154,6 +154,11 @@ main() {
     preflight_checks
     detect_distro
 
+    # Check for Virtual Machine and apply cursor & guest optimizations
+    if is_virtual_machine; then
+        setup_vm_environment
+    fi
+
     local distro_dir="${SCRIPT_DIR}/distros/${DETECTED_DISTRO}"
     if [[ ! -d "${distro_dir}" ]]; then
         log_err "Configuration directory for distro '${DETECTED_DISTRO}' not found at ${distro_dir}."
