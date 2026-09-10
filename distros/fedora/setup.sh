@@ -75,6 +75,10 @@ add_fedora_repositories() {
             2>&1 | tee -a "${LOG_FILE}" || log_warn "Terra repository installation returned a warning."
     fi
 
+    # Quickshell COPR Repository
+    log_info "Configuring Quickshell COPR repository..."
+    sudo dnf copr enable -y errornointernet/quickshell 2>&1 | tee -a "${LOG_FILE}" || log_warn "Quickshell COPR repository enablement returned a warning."
+
     log_info "Refreshing package metadata..."
     sudo dnf check-update || true
     log_ok "Fedora repositories initialized."

@@ -68,12 +68,29 @@ install_core_packages() {
         # Terminal & system info
         kitty
         fastfetch
+        yazi
+        thunar
+        eza
+        htop
+        btop
+        zoxide
 
         # Theming & Appearance
         bibata-cursor-theme
         qt5ct
         qt6ct
         google-noto-color-emoji-fonts
+
+        # Quickshell & Qt6/QML Runtime Dependencies
+        quickshell
+        qt6-qtdeclarative
+        qt6-qtwayland
+        qt6-qt5compat
+        qt6-qtsvg
+        qt6-qtmultimedia
+        qt6-qtimageformats
+        socat
+        jq
 
         # Compositor & Shell
         mangowm

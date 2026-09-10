@@ -38,7 +38,10 @@ install_core_packages() {
     local core_pkgs=(
         git curl wget rsync xwayland wl-clipboard
         grim slurp xdg-desktop-portal-wlr xdg-desktop-portal-gtk
-        kitty fastfetch
+        kitty fastfetch yazi thunar eza htop btop zoxide
+        qml6-module-qtquick-templates qml6-module-qt5compat-graphicaleffects
+        qt6-wayland qml6-module-qtquick-layouts qml6-module-qtquick-controls
+        socat jq
     )
     pkg_install "${core_pkgs[@]}"
 }

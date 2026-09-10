@@ -38,10 +38,12 @@ install_core_packages() {
     local core_pkgs=(
         git curl wget rsync xorg-xwayland wl-clipboard
         grim slurp xdg-desktop-portal-wlr xdg-desktop-portal-gtk
-        kitty fastfetch
+        kitty fastfetch yazi thunar eza htop btop zoxide
+        qt6-5compat qt6-declarative qt6-wayland qt6-svg qt6-multimedia
+        socat jq
     )
     pkg_install "${core_pkgs[@]}"
-    log_info "Note: mangowc and noctalia can be installed from AUR on Arch."
+    log_info "Note: mangowc, noctalia, and quickshell can be installed from AUR on Arch."
 }
 
 install_greeter_packages() {
