@@ -37,7 +37,7 @@ Unlike bloated scripts that install dozens of non-essential applications, this i
 
 ## ✨ Features
 
-- **Lean Core Desktop:** Zero bloat. Installs only `mangowc`, `noctalia`, `quickshell`, `kitty`, file management (`thunar`, `yazi`), terminal productivity utilities (`eza`, `htop`, `btop`, `zoxide`), and essential Wayland portals/utilities. No NVIDIA proprietary builds, no OBS, and no heavy unnecessary apps.
+- **Lean Core Desktop:** Zero bloat. Installs only `mangowc`, `noctalia`, `quickshell`, `kitty`, file management (`thunar`, `yazi`), terminal productivity utilities (`eza`, `htop`, `btop`, `zoxide`), and essential Wayland display & recording utilities (`wlr-randr`, `wl-mirror`, `grim`, `slurp`, `gpu-screen-recorder`, `xdg-desktop-portal-wlr`). No NVIDIA proprietary builds, no OBS, and no heavy unnecessary apps.
 - **Quickshell Ecosystem Ready:** Pre-configures the Quickshell COPR repository and all necessary Qt6/QML dependencies (`qt6-qtdeclarative`, `qt6-qtwayland`, `qt6-qt5compat`, `qt6-qtsvg`, `qt6-qtmultimedia`, `qt6-qtimageformats`, `socat`, `jq`) so you can run custom Quickshell bars, overviews, and widgets out of the box.
 - **Pure Kitty Integration:** All keybindings and configs are unified around `kitty` — foot and foot-client configs are eliminated.
 - **Config Colocation:** Keeps all Mango configurations and related application configurations consolidated under `~/.config/mangowc/` (including `kitty.conf`), maintaining clean compatibility via a `~/.config/mango -> mangowc` symlink.

@@ -36,8 +36,8 @@ pkg_install() {
 
 install_core_packages() {
     local core_pkgs=(
-        git curl wget rsync xorg-xwayland wl-clipboard
-        grim slurp xdg-desktop-portal-wlr xdg-desktop-portal-gtk
+        git curl wget rsync xorg-xwayland wl-clipboard wl-mirror wlr-randr
+        grim slurp gpu-screen-recorder xdg-desktop-portal-wlr xdg-desktop-portal-gtk
         kitty fastfetch yazi thunar eza htop btop zoxide
         qt6-5compat qt6-declarative qt6-wayland qt6-svg qt6-multimedia
         socat jq

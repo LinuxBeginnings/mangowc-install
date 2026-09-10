@@ -60,8 +60,11 @@ install_core_packages() {
         rsync
         xorg-x11-server-Xwayland
         wl-clipboard
+        wl-mirror
+        wlr-randr
         grim
         slurp
+        gpu-screen-recorder
         xdg-desktop-portal-wlr
         xdg-desktop-portal-gtk
 
