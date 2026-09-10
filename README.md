@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🥭 ** MamgoDOTS - (2026) ** 🥭
+# 🥭 ** MangoWC - (2026) ** 🥭
 
 ### Minimal & Extensible Wayland Compositor Setup with Noctalia Shell
 
@@ -29,7 +29,7 @@
 
 ## 📖 Overview
 
-**MamgoDOTS - (2026)** is an extensible, multi-distribution installer engineered for a minimal, lightning-fast Wayland desktop environment pairing the **Mango** Wayland compositor with **Noctalia Shell**, styled with **Kitty** terminal and **Fastfetch**.
+**MangoWC - (2026)** is an extensible, multi-distribution installer engineered for a minimal, lightning-fast Wayland desktop environment pairing the **Mango** Wayland compositor with **Noctalia Shell**, styled with **Kitty** terminal and **Fastfetch**.
 
 Unlike bloated scripts that install dozens of non-essential applications, this installer focuses strictly on core desktop components, Wayland essentials, and streamlined configuration.
 

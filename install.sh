@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==================================================
-#  MamgoDOTS - (2026)
+#  MangoWC - (2026)
 #  Project URL: https://github.com/LinuxBeginnings
 #  License: GNU GPLv3
 # ==================================================
@@ -91,7 +91,7 @@ print_banner() {
   / /|_/ / /| | /  |/ / / __/ /  | | /| / / /     
  / /  / / ___ |/ /|  / /_/ / /___| |/ |/ / /___   
 /_/  /_/_/  |_/_/ |_/\____/_____/|__/|__/\____/   
-   MamgoDOTS - (2026) | LinuxBeginnings
+   MangoWC - (2026) | LinuxBeginnings
 BANNER
     echo -e "${RESET}"
 }

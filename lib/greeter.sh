@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==================================================
-#  MamgoDOTS - (2026)
+#  MangoWC - (2026)
 #  Project URL: https://github.com/LinuxBeginnings
 #  License: GNU GPLv3
 # ==================================================
