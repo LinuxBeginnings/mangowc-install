@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🥭 ** MangoWC - (2026) ** 🥭
+# 🥭 ** MangoWC-Dots - (2026) ** 🥭
 
 ### Minimal & Extensible Wayland Compositor Setup with Noctalia Shell
 
