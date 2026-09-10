@@ -1,0 +1,170 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    // "type": "kitty",
+    //  "source": "~/.config/fastfetch/images/debian_swirl.png",
+    // "height": 10,
+    // "width": 20,
+    "type": "small",
+    "padding": {
+      "top": 3,
+      "left": 2,
+    },
+  },
+  "modules": [
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[90m┌──────────────────────Hardware──────────────────────┐",
+    },
+    {
+      "type": "host",
+      "key": " PC",
+      "keyColor": "green",
+    },
+    {
+      "type": "cpu",
+      "key": "│ ├",
+      "keyColor": "green",
+    },
+    {
+      "type": "gpu",
+      "key": "│ ├󰍛",
+      "keyColor": "green",
+    },
+    {
+      "type": "memory",
+      "key": "│ ├󰍛",
+      "keyColor": "green",
+    },
+    {
+      "type": "memory",
+      "key": "│ │󰔵",
+      "keyColor": "green",
+      "format": "{percentage-bar}",
+      "percent": {
+        "type": 3,
+        "green": 40,
+        "yellow": 75,
+      },
+    },
+    {
+      "type": "disk",
+      "key": "│ ├",
+      "keyColor": "green",
+    },
+    {
+      "type": "disk",
+      "key": "└ └󰔵",
+      "keyColor": "green",
+      "format": "{size-percentage-bar}",
+      "percent": {
+        "type": 3,
+        "green": 40,
+        "yellow": 75,
+      },
+    },
+    {
+      "type": "custom",
+      "format": "\u001b[90m└────────────────────────────────────────────────────┘",
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[90m┌──────────────────────Software──────────────────────┐",
+    },
+    {
+      "type": "os",
+      "key": " OS",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "kernel",
+      "key": "│ ├",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "bios",
+      "key": "│ ├",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "packages",
+      "key": "│ ├󰏖",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "shell",
+      "key": "└ └",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "command",
+      "key": " WM",
+      "keyColor": "blue",
+      "text": "if pgrep -x dwm >/dev/null 2>&1; then v=$(dwm -v 2>&1 | tr -d '\\n'); echo \"${v:-dwm} ($(echo ${XDG_SESSION_TYPE:-X11} | tr a-z A-Z))\"; else data=$(fastfetch -s wm --format json 2>/dev/null); wm=$(echo \"$data\" | grep -o '\"prettyName\": *\"[^\"]*\"' | head -1 | cut -d'\"' -f4); ver=$(echo \"$data\" | grep -o '\"version\": *\"[^\"]*\"' | head -1 | cut -d'\"' -f4); proto=$(echo \"$data\" | grep -o '\"protocolName\": *\"[^\"]*\"' | head -1 | cut -d'\"' -f4); echo \"$wm${ver:+ $ver}${proto:+ ($proto)}\"; fi",
+    },
+    {
+      "type": "wmtheme",
+      "key": "│ ├󰉼",
+      "keyColor": "blue",
+    },
+    {
+      "type": "display",
+      "key": "│ ├󰍹",
+      "keyColor": "blue",
+      "format": "{name} ({width}x{height} @ {refresh-rate}Hz)",
+    },
+    {
+      "type": "lm",
+      "key": "│ ├",
+      "keyColor": "blue",
+    },
+    {
+      "type": "terminal",
+      "key": "│ ├",
+      "keyColor": "blue",
+    },
+    {
+      "type": "terminalfont",
+      "key": "└ └",
+      "keyColor": "blue",
+    },
+    {
+      "type": "custom",
+      "format": "\u001b[90m└────────────────────────────────────────────────────┘",
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[90m┌─────────────────Uptime / Age / DT──────────────────┐",
+    },
+    {
+      "type": "command",
+      "key": "  OS Age ",
+      "keyColor": "magenta",
+      "text": "birth_install=$(stat -c %W /); current=$(date +%s); time_progression=$((current - birth_install)); days_difference=$((time_progression / 86400)); echo $days_difference days",
+    },
+    {
+      "type": "uptime",
+      "key": "  Uptime ",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "datetime",
+      "key": "  DateTime ",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "command",
+      "key": "  MangoDots ",
+      "keyColor": "magenta",
+      "text": "echo \"v${MANGO_DOTS_VERSION:-0.0.1}\"",
+    },
+    {
+      "type": "custom",
+      "format": "\u001b[90m└────────────────────────────────────────────────────┘",
+    },
+    "break",
+  ],
+}

@@ -1,0 +1,13 @@
+# Logs
+Install-Logs/
+*.log
+
+# Temporary files and caches
+tmp/
+.cache/
+Wallpaper-Bank/
+
+# Editor / OS artifacts
+.DS_Store
+*~
+*.swp
