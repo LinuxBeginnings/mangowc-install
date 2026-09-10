@@ -83,26 +83,35 @@ mangowc/
 ├── README.md                   # Documentation
 ├── lib/                        # Multi-distro common libraries
 │   ├── common.sh               # Colors, logging, sudo keepalive, backup helpers
-│   ├── detect.sh               # /etc/os-release parsing and distro matcher
+│   ├── detect.sh               # /etc/os-release parsing and VM/distro matcher
 │   ├── greeter.sh              # greetd + noctalia-greeter installation & rollback
 │   └── wallpapers.sh           # Wallpaper-Bank cloning with AI warning
 ├── distros/                    # Distribution-specific modules
 │   ├── fedora/
-│   │   ├── packages.sh         # Lean package lists (mangowm, noctalia, kitty)
-│   │   └── setup.sh            # DNF parallel downloads & Terra/RPM Fusion repos
+│   │   ├── packages.sh         # Lean package lists (mangowm, noctalia, kitty, etc.)
+│   │   └── setup.sh            # DNF parallel downloads, COPR & Terra/RPM Fusion repos
 │   ├── arch/                   # Modular stub for Arch Linux
 │   └── debian/                 # Modular stub for Debian/Ubuntu
 └── configs/
-    ├── fastfetch/
-    │   └── config.jsonc        # Standard hardware & software fetch layout
-    ├── greetd/
-    │   └── config.toml         # greetd configuration template
+    ├── btop/                   # Target: ~/.config/btop/
+    │   └── btop.conf
+    ├── fastfetch/              # Target: ~/.config/fastfetch/
+    │   └── config.jsonc
+    ├── ghostty/                # Target: ~/.config/ghostty/
+    │   └── config
+    ├── greetd/                 # Target: /etc/greetd/
+    │   └── config.toml
+    ├── kitty/                  # Target: ~/.config/kitty/ (Noctalia-themeable)
+    │   ├── current-theme.conf
+    │   └── kitty.conf
+    ├── yazi/                   # Target: ~/.config/yazi/ (Noctalia flavor)
+    │   ├── flavors/
+    │   └── theme.toml
     └── mangowc/                # Target: ~/.config/mangowc/
         ├── autostart.sh        # Portal & Noctalia startup
-        ├── bind.conf           # Clean Kitty & Noctalia keybindings
-        ├── config.conf         # Mango compositor config
-        ├── env.conf            # Dynamic Wayland environment
-        ├── kitty.conf          # Noctalia-themed Kitty terminal
+        ├── bind.conf           # Mango keybindings
+        ├── config.conf         # Mango compositor config (scroller proportions)
+        ├── env.conf            # Dynamic Wayland environment & MANGO_DEFAULT_LAYOUT
         ├── monitor.conf        # Display rules
         ├── noctalia.conf       # Theme colors
         ├── rule.conf           # Window rules (floating-kitty, etc.)
@@ -116,13 +125,11 @@ mangowc/
 
 ---
 
-## 🗂 Configuration Colocation
+## 🗂 Configuration & Theming Integration
 
-All configuration files reside in `~/.config/mangowc/`:
-
-- Terminal launches: `kitty --config ~/.config/mangowc/kitty.conf`
-- Mango symlink: `~/.config/mango` points directly to `~/.config/mangowc`
-- To reload your setup on the fly: press `Super + Alt + R` or execute `~/.config/mangowc/bin/reload.sh`.
+- **Standard XDG Locations**: App configs (`kitty`, `ghostty`, `btop`, `yazi`, `fastfetch`) are deployed directly to `~/.config/<app>` so Noctalia Shell's theme engine can seamlessly generate and apply color schemes (e.g. `~/.config/kitty/current-theme.conf`, `~/.config/yazi/theme.toml`).
+- **Mango Compositor**: Configured under `~/.config/mangowc` with an automatic symlink `~/.config/mango -> mangowc`.
+- **Default Layout**: Controlled via `env=MANGO_DEFAULT_LAYOUT,...` in `~/.config/mangowc/env.conf`. Reloading via `Super + Alt + R` or `~/.config/mangowc/bin/reload.sh` synchronizes this layout across all tags in `tag.conf`.
 
 ---
 

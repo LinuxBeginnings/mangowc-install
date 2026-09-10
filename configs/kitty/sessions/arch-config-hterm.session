@@ -1,0 +1,14 @@
+
+new_tab
+layout splits
+enabled_layouts splits,stack
+set_layout_state {"pairs": {"bias": 0.7463157894736838, "one": {"horizontal": false, "bias": 0.5749179034187818, "one": 1, "two": 2}, "two": {"horizontal": false, "bias": 0.668711656441718, "one": 3, "two": 4}}, "opts": {"default_axis_is_horizontal": true}, "class": "Splits", "all_windows": {"active_group_idx": 3, "active_group_history": [2, 4, 3, 1], "window_groups": [{"id": 1, "window_ids": [1]}, {"id": 2, "window_ids": [2]}, {"id": 3, "window_ids": [3]}, {"id": 4, "window_ids": [4]}]}}
+cd ../../arch-config
+
+launch 'kitty-unserialize-data={"id": 1, "cmd_at_shell_startup": ["/usr/bin/nvim", "/home/don/.config/arch-config/"]}'
+launch 'kitty-unserialize-data={"id": 2, "cmd_at_shell_startup": ["/home/don/.cargo/bin/normie-git"]}'
+launch 'kitty-unserialize-data={"id": 3, "cmd_at_shell_startup": "opencode"}'
+launch 'kitty-unserialize-data={"id": 4}'
+focus
+
+focus_tab 0

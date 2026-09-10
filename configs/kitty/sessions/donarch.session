@@ -1,0 +1,13 @@
+
+new_tab
+layout splits
+enabled_layouts splits,stack
+set_layout_state {"pairs": {"one": 1, "two": {"one": 2, "two": 3}}, "opts": {"default_axis_is_horizontal": true}, "class": "Splits", "all_windows": {"active_group_idx": 2, "active_group_history": [1, 3, 2], "window_groups": [{"id": 1, "window_ids": [1]}, {"id": 2, "window_ids": [2]}, {"id": 3, "window_ids": [3]}]}}
+cd ../../../donarch
+
+launch 'kitty-unserialize-data={"id": 1, "cmd_at_shell_startup": "felix /home/don/donarch/"}' --cwd=../../..
+launch 'kitty-unserialize-data={"id": 2}'
+launch 'kitty-unserialize-data={"id": 3}'
+focus
+
+focus_tab 0

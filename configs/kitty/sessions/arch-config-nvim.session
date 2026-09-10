@@ -1,0 +1,13 @@
+
+new_tab
+layout splits
+enabled_layouts splits,stack
+set_layout_state {"pairs": {"bias": 0.7567353407290023, "one": 1, "two": {"horizontal": false, "one": 2, "two": 3}}, "opts": {"default_axis_is_horizontal": true}, "class": "Splits", "all_windows": {"active_group_idx": 2, "active_group_history": [1, 3, 2], "window_groups": [{"id": 1, "window_ids": [1]}, {"id": 2, "window_ids": [2]}, {"id": 3, "window_ids": [3]}]}}
+cd ../../arch-config
+
+launch 'kitty-unserialize-data={"id": 1, "cmd_at_shell_startup": "nvim ~/.config/arch-config/"}'
+focus
+launch 'kitty-unserialize-data={"id": 2, "cmd_at_shell_startup": "opencode"}'
+launch 'kitty-unserialize-data={"id": 3}'
+
+focus_tab 0

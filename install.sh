@@ -97,23 +97,35 @@ BANNER
 }
 
 deploy_dotfiles() {
-    log_info "Deploying mangowc and fastfetch configurations..."
+    log_info "Deploying configurations to ~/.config/..."
 
     local config_home="${XDG_CONFIG_HOME:-${HOME}/.config}"
     mkdir -p "${config_home}"
 
-    # 1. Fastfetch backup & install
-    local fastfetch_dst="${config_home}/fastfetch"
-    if [[ -d "${fastfetch_dst}" ]]; then
-        backup_path "${fastfetch_dst}" "fastfetch-mangowc"
-    fi
-    mkdir -p "${fastfetch_dst}"
-    if [[ -f "${SCRIPT_DIR}/configs/fastfetch/config.jsonc" ]]; then
-        cp -f "${SCRIPT_DIR}/configs/fastfetch/config.jsonc" "${fastfetch_dst}/config.jsonc"
-        log_ok "Copied fastfetch config to ${fastfetch_dst}/config.jsonc"
-    fi
+    # 1. Modular application configs: kitty, ghostty, btop, fastfetch, yazi
+    local app_configs=(
+        "kitty"
+        "ghostty"
+        "btop"
+        "fastfetch"
+        "yazi"
+    )
 
-    # 2. Mangowc backup & install
+    for app in "${app_configs[@]}"; do
+        local src_dir="${SCRIPT_DIR}/configs/${app}"
+        local dst_dir="${config_home}/${app}"
+
+        if [[ -d "${src_dir}" ]]; then
+            if [[ -d "${dst_dir}" && ! -L "${dst_dir}" ]]; then
+                backup_path "${dst_dir}" "${app}-mangowc"
+            fi
+            mkdir -p "${dst_dir}"
+            cp -rf "${src_dir}/"* "${dst_dir}/"
+            log_ok "Deployed ${app} config to ${dst_dir}"
+        fi
+    done
+
+    # 2. Mangowc compositor config
     local mangowc_dst="${config_home}/mangowc"
     if [[ -d "${mangowc_dst}" && ! -L "${mangowc_dst}" ]]; then
         backup_path "${mangowc_dst}" "mangowc-backup"
@@ -144,17 +156,6 @@ deploy_dotfiles() {
     # Create relative symlink ~/.config/mango -> mangowc for upstream mango compatibility
     ln -sfn "mangowc" "${mango_legacy}"
     log_ok "Linked ${mango_legacy} -> mangowc"
-
-    # 3. Setup Kitty default fallback link if ~/.config/kitty is absent or desired
-    local kitty_dst="${config_home}/kitty"
-    if [[ ! -e "${kitty_dst}" ]]; then
-        mkdir -p "${kitty_dst}"
-        ln -sf "${mangowc_dst}/kitty.conf" "${kitty_dst}/kitty.conf"
-        log_ok "Linked ${kitty_dst}/kitty.conf -> ${mangowc_dst}/kitty.conf"
-    elif [[ ! -e "${kitty_dst}/kitty.conf" ]]; then
-        ln -sf "${mangowc_dst}/kitty.conf" "${kitty_dst}/kitty.conf"
-        log_ok "Linked ${kitty_dst}/kitty.conf -> ${mangowc_dst}/kitty.conf"
-    fi
 }
 
 main() {
