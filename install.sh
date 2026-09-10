@@ -129,6 +129,14 @@ deploy_dotfiles() {
 
     mkdir -p "${mangowc_dst}"
     cp -rf "${SCRIPT_DIR}/configs/mangowc/"* "${mangowc_dst}/"
+
+    # Sync default layout from env.conf to tag.conf
+    local def_layout
+    def_layout="$(grep -E '^env=MANGO_DEFAULT_LAYOUT,' "${mangowc_dst}/env.conf" | cut -d',' -f2 | tr -d ' ' || echo "scroller")"
+    if [[ -n "${def_layout}" ]]; then
+        sed -i -E "s/layout_name:[a-zA-Z0-9_]+/layout_name:${def_layout}/g" "${mangowc_dst}/tag.conf"
+    fi
+
     chmod +x "${mangowc_dst}/autostart.sh" 2>/dev/null || true
     chmod +x "${mangowc_dst}/bin/"* 2>/dev/null || true
     log_ok "Deployed mangowc dotfiles to ${mangowc_dst}"

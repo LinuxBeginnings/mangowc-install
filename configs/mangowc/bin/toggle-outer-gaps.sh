@@ -10,15 +10,15 @@ CONFIG_FILE="${HOME}/.config/mangowc/config.conf"
 TAG_FILE="${HOME}/.config/mangowc/tag.conf"
 STATE_FILE="${HOME}/.config/mangowc/.recording_mode"
 
-STRUCTS=450
+STRUCTS=0
 
 if [[ -f "${STATE_FILE}" ]]; then
     NEW_GAPPOH=10
     MODE="Normal"
     rm -f "${STATE_FILE}"
 else
-    NEW_GAPPOH=450
-    MODE="Recording (16:9)"
+    NEW_GAPPOH=40
+    MODE="Spacious"
     touch "${STATE_FILE}"
 fi
 
@@ -28,7 +28,7 @@ if [[ -f "${CONFIG_FILE}" ]]; then
 fi
 
 if command -v mmsg >/dev/null 2>&1; then
-    mmsg -d reload_config 2>/dev/null || true
+    mmsg dispatch reload_config 2>/dev/null || true
 fi
 
 if command -v notify-send >/dev/null 2>&1; then

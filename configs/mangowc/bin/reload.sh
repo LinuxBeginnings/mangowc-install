@@ -6,9 +6,20 @@
 
 set +e
 
+# Sync default layout from env.conf to tag.conf if set
+ENV_CONF="${HOME}/.config/mangowc/env.conf"
+TAG_CONF="${HOME}/.config/mangowc/tag.conf"
+
+if [[ -f "${ENV_CONF}" && -f "${TAG_CONF}" ]]; then
+    DEF_LAYOUT="$(grep -E '^env=MANGO_DEFAULT_LAYOUT,' "${ENV_CONF}" | cut -d',' -f2 | tr -d ' ' || true)"
+    if [[ -n "${DEF_LAYOUT}" ]]; then
+        sed -i -E "s/layout_name:[a-zA-Z0-9_]+/layout_name:${DEF_LAYOUT}/g" "${TAG_CONF}"
+    fi
+fi
+
 # Reload mango configuration
 if command -v mmsg >/dev/null 2>&1; then
-    mmsg -d reload_config 2>/dev/null || true
+    mmsg dispatch reload_config 2>/dev/null || true
 fi
 
 # Reload Noctalia Shell
