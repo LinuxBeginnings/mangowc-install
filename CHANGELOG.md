@@ -1,6 +1,6 @@
 # CHANGELOG.MD
 
-## MangoWC-Dots
+## MangoWC-Dots -- Current version v0.0.2
 
 - A simple installer to install mangowc compositor on differnt distros
 - Using the noctalia shell by default
@@ -18,4 +18,11 @@
 ## Sept 2026
 
 - Initial commit 9/9/2026
--
+
+## Fixed:
+
+- Polkit escalation issues
+  - Check for hyprlandpolkit service
+    - stop service
+  - Added `xfce-polkit` to handle GUI priv escalation requests
+    - Added polkit rules for noctalia greeter wallpaper sync feature

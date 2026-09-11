@@ -84,6 +84,9 @@ install_core_packages() {
         qt6ct
         google-noto-color-emoji-fonts
 
+        # Polkit Authentication Agent
+        xfce-polkit
+
         # Quickshell & Qt6/QML Runtime Dependencies
         quickshell
         qt6-qtdeclarative

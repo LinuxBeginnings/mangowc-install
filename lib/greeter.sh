@@ -114,6 +114,22 @@ EOF
     done
     sudo systemctl disable --now display-manager.service 2>/dev/null || true
 
+    # Configure Polkit rules for Noctalia greeter appearance sync
+    if [[ -d /etc/polkit-1/rules.d ]]; then
+        log_info "Installing Polkit rule for Noctalia greeter appearance sync..."
+        sudo tee /etc/polkit-1/rules.d/50-noctalia-greeter.rules >/dev/null <<'POLKIT_RULE'
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel")) {
+        if (action.id == "org.noctalia.greeter.sync-appearance" ||
+            action.id == "org.freedesktop.systemd1.manage-units") {
+            return polkit.Result.YES;
+        }
+    }
+});
+POLKIT_RULE
+        log_ok "Polkit rule installed at /etc/polkit-1/rules.d/50-noctalia-greeter.rules"
+    fi
+
     # Enable greetd systemd service if systemd is active
     if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
         log_info "Enabling greetd.service via systemctl..."
@@ -140,6 +156,12 @@ remove_noctalia_greeter() {
     # Look for most recent backup of /etc/greetd/config.toml
     local latest_bak
     latest_bak="$(sudo find /etc/greetd -maxdepth 1 -name 'config.toml.bak.*' 2>/dev/null | sort -V | tail -n 1 || true)"
+
+    # Remove Polkit rule if installed
+    if [[ -f /etc/polkit-1/rules.d/50-noctalia-greeter.rules ]]; then
+        sudo rm -f /etc/polkit-1/rules.d/50-noctalia-greeter.rules
+        log_ok "Removed /etc/polkit-1/rules.d/50-noctalia-greeter.rules."
+    fi
 
     if [[ -n "${latest_bak}" && -f "${latest_bak}" ]]; then
         log_info "Restoring previous configuration from ${latest_bak}..."
