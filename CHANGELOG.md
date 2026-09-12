@@ -45,7 +45,12 @@
   - Ensured identical `/usr/bin/` binary symlinks and `uwsm` support
 
 - Mango Configuration & Monitor Settings
+  - Compiled `mango` and `mmsg` natively from source against Ubuntu's native `libwayland-server` and `libwlroots-0.19` stack to resolve ABI mismatch segfault in `libwayland-server.so`
+  - Fixed PCRE2 regex pattern in `monitor.conf` (`name:.*` instead of invalid quantifier `name:*`)
   - Updated `configs/mangowc/monitor.conf` to use native preferred resolution and refresh rate (`width:0,height:0,refresh:0`) instead of forcing 1080p60 on high-resolution/high-refresh displays
+  - Added default Noctalia shell configuration (`configs/noctalia/config.toml`) and integrated into `deploy_dotfiles`
+  - Fixed Kitty per-process listen socket (`listen_on unix:/tmp/kitty-{kitty_pid}`) and font family (`FiraCode Nerd Font`)
+  - Updated `autostart.sh` with `dbus-update-activation-environment` and removed conflicting manual portal launches
   - Fixed `mango-session` to look in `/usr/local/bin/mango` in addition to `/usr/bin/mango`
   - Synchronized `MANGO_DOTS_VERSION="0.0.2"` across `install.sh` and `lib/common.sh`
 

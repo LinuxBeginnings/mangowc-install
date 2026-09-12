@@ -1,0 +1,32 @@
+# ==================================================
+#  MangoWC - (2026)
+#  Noctalia Desktop Shell Configuration
+# ==================================================
+
+[accessibility]
+ui_scale = 1.0
+
+[shell]
+corner_radius_scale = 1.0
+font_family = "sans-serif"
+time_format = "%H:%M"
+date_format = "%A, %x"
+clipboard_enabled = true
+
+[bar.main]
+position = "top"
+thickness = 34
+background_opacity = 0.90
+radius = 12
+margin_ends = 180
+margin_edge = 10
+padding = 14
+widget_spacing = 6
+scale = 1.0
+shadow = true
+auto_hide = false
+reserve_space = true
+
+start = ["launcher", "wallpaper", "workspaces"]
+center = ["clock"]
+end = ["media", "tray", "notifications", "clipboard", "network", "bluetooth", "volume", "session"]

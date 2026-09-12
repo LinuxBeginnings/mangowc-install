@@ -62,12 +62,13 @@ pkg_install() {
 }
 
 install_mango() {
-    if command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1; then
+    local force="${1:-0}"
+    if [[ "${force}" -ne 1 ]] && (command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1); then
         log_ok "Mango compositor already installed."
         return 0
     fi
 
-    log_info "Installing Mango compositor for Debian..."
+    log_info "Installing Mango compositor from source..."
     local wlroots_pkg="libwlroots-0.19-dev"
     if ! pkg_in_repos "${wlroots_pkg}"; then
         wlroots_pkg="libwlroots-dev"
@@ -90,29 +91,62 @@ install_mango() {
         meson setup "${tmp_dir}/scenefx/build" "${tmp_dir}/scenefx" --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
         ninja -C "${tmp_dir}/scenefx/build" 2>&1 | tee -a "${LOG_FILE}"
         sudo ninja -C "${tmp_dir}/scenefx/build" install 2>&1 | tee -a "${LOG_FILE}"
+        sudo ldconfig
     fi
 
-    # Install mango binary and desktop session
-    log_info "Fetching and installing mango binaries and desktop session..."
-    local deb_path="${tmp_dir}/mangowc.deb"
-    if curl -fsSL "https://apt.justaguy.dev/pool/main/mangowc_0.14.4-6_amd64.deb" -o "${deb_path}"; then
-        local unpack_dir="${tmp_dir}/unpacked"
-        mkdir -p "${unpack_dir}"
-        dpkg -x "${deb_path}" "${unpack_dir}"
-        sudo cp -a "${unpack_dir}/usr/bin/"* /usr/local/bin/
-        sudo cp -a "${unpack_dir}/usr/share/wayland-sessions" /usr/share/ 2>/dev/null || true
-        sudo cp -a "${unpack_dir}/usr/share/xdg-desktop-portal" /usr/share/ 2>/dev/null || true
-        sudo cp -a "${unpack_dir}/etc/mango" /etc/ 2>/dev/null || true
-        sudo ln -sfn /usr/local/bin/mango /usr/local/bin/mangowc
-        sudo ln -sfn /usr/local/bin/mango /usr/bin/mango
-        sudo ln -sfn /usr/local/bin/mangowc /usr/bin/mangowc
-        sudo ln -sfn /usr/local/bin/mango-session /usr/bin/mango-session
-        sudo ln -sfn /usr/local/bin/mmsg /usr/bin/mmsg
-        sudo ldconfig
-        log_ok "Mango compositor installed successfully to /usr/local/bin/mango."
-    else
-        log_err "Failed to download mangowc package."
+    # Build and install mango 0.14.4 from source
+    log_info "Building mango 0.14.4 from source..."
+    git clone --depth=1 --branch 0.14.4 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
+    cd "${tmp_dir}/mango"
+    C_INCLUDE_PATH="/usr/local/include:${C_INCLUDE_PATH:-}" \
+    PKG_CONFIG_PATH="/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+        meson setup build --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
+    ninja -C build 2>&1 | tee -a "${LOG_FILE}"
+    sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
+    gcc -O2 -o mmsg/mmsg mmsg/mmsg.c -lcjson 2>&1 | tee -a "${LOG_FILE}" || true
+    if [[ -f mmsg/mmsg ]]; then
+        sudo cp -a mmsg/mmsg /usr/local/bin/
     fi
+    cd - >/dev/null
+
+    # Create session wrapper and desktop entries
+    sudo mkdir -p /usr/share/wayland-sessions
+    sudo tee /usr/share/wayland-sessions/mango.desktop >/dev/null <<'DESKTOP_EOF'
+[Desktop Entry]
+Encoding=UTF-8
+Name=Mango
+DesktopNames=mango;wlroots
+Comment=mango WM
+Exec=mango-session
+Icon=mango
+Type=Application
+DESKTOP_EOF
+
+    sudo tee /usr/local/bin/mango-session >/dev/null <<'SESSION_EOF'
+#!/bin/sh
+ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mango/env"
+if [ -r "$ENV_FILE" ]; then
+    if sh -n "$ENV_FILE" 2>/dev/null; then
+        set -a
+        . "$ENV_FILE"
+        set +a
+    fi
+fi
+if [ -x /usr/local/bin/mango ]; then
+    exec /usr/local/bin/mango "$@"
+else
+    exec /usr/bin/mango "$@"
+fi
+SESSION_EOF
+    sudo chmod +x /usr/local/bin/mango-session
+
+    sudo ln -sfn /usr/local/bin/mango /usr/local/bin/mangowc
+    sudo ln -sfn /usr/local/bin/mango /usr/bin/mango
+    sudo ln -sfn /usr/local/bin/mangowc /usr/bin/mangowc
+    sudo ln -sfn /usr/local/bin/mango-session /usr/bin/mango-session
+    sudo ln -sfn /usr/local/bin/mmsg /usr/bin/mmsg 2>/dev/null || true
+    sudo ldconfig
+    log_ok "Mango compositor installed successfully to /usr/local/bin/mango."
 
     rm -rf "${tmp_dir}"
 }

@@ -116,6 +116,7 @@ deploy_dotfiles() {
         "btop"
         "fastfetch"
         "yazi"
+        "noctalia"
     )
 
     for app in "${app_configs[@]}"; do
