@@ -1,0 +1,106 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "FiraCode Nerd Font", "Font Awesome 6 Free", sans-serif;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(23, 18, 20, 0.9);
+    color: #ebe0e2;
+    transition-property: background-color;
+    transition-duration: 0.3s;
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+#workspaces,
+#tags {
+    margin: 4px 0;
+}
+
+#workspaces button,
+#tags button {
+    padding: 0 6px;
+    background: transparent;
+    color: #9c8d92;
+    border-bottom: 2px solid transparent;
+}
+
+#workspaces button:hover,
+#tags button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inherit;
+    text-shadow: inherit;
+}
+
+#workspaces button.focused,
+#workspaces button.active,
+#tags button.focused,
+#tags button.active,
+#tags button.occupied,
+#tags button.urgent {
+    color: #ffafd7;
+    border-bottom: 2px solid #ffafd7;
+}
+
+#workspaces button.urgent,
+#tags button.urgent {
+    background-color: #f3ba9b;
+    color: #171214;
+}
+
+#custom-menu {
+    color: #ffafd7;
+    font-size: 18px;
+    padding: 0 12px;
+    margin: 4px 4px;
+    border-radius: 6px;
+}
+
+#custom-menu:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#clock {
+    color: #ebe0e2;
+    padding: 0 12px;
+}
+
+#cpu,
+#memory,
+#network,
+#pulseaudio,
+#tray {
+    padding: 0 8px;
+    color: #dfbdcc;
+}
+
+#cpu.warning {
+    color: #ffb4ab;
+}
+
+#cpu.critical {
+    color: #ffb4ab;
+    background: rgba(255, 180, 171, 0.2);
+}
+
+#pulseaudio.muted {
+    color: #9c8d92;
+}
+
+#network.disconnected {
+    color: #ffb4ab;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: #f3ba9b;
+}

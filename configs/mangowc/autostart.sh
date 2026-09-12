@@ -45,8 +45,13 @@ if command -v gsettings >/dev/null 2>&1; then
     gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
 fi
 
-# Start Noctalia Shell (handles bar, launcher, wallpapers, notifications, dock)
-if command -v noctalia >/dev/null 2>&1; then
-    mkdir -p "${HOME}/.local/state/noctalia"
-    noctalia > "${HOME}/.local/state/noctalia/noctalia.log" 2>&1 &
+# Start Noctalia Shell (optional; disabled for now while debugging Mango)
+# if command -v noctalia >/dev/null 2>&1; then
+#     mkdir -p "${HOME}/.local/state/noctalia"
+#     noctalia > "${HOME}/.local/state/noctalia/noctalia.log" 2>&1 &
+# fi
+
+# Start Waybar (lightweight bar for Mango)
+if command -v waybar >/dev/null 2>&1; then
+    waybar > "${HOME}/.local/state/waybar.log" 2>&1 &
 fi
