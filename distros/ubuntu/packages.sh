@@ -61,6 +61,108 @@ pkg_install() {
     fi
 }
 
+install_mango() {
+    if command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1; then
+        log_ok "Mango compositor already installed."
+        return 0
+    fi
+
+    log_info "Installing Mango compositor for Ubuntu 26.04..."
+    local build_deps=(
+        libwlroots-0.19-dev meson ninja-build pkg-config libwayland-dev
+        wayland-protocols libdrm-dev libegl-dev libgles-dev libpixman-1-dev
+        libcjson-dev libpcre2-dev libinput-dev libxkbcommon-dev libxcb-icccm4-dev
+    )
+    sudo apt-get install -y "${build_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
+
+    local tmp_dir="/tmp/mango-install-$$"
+    mkdir -p "${tmp_dir}"
+
+    # Build and install scenefx 0.4.1 if missing
+    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libscenefx-0.4.so && ! -f /usr/local/lib/libscenefx-0.4.so ]]; then
+        log_info "Building scenefx 0.4.1 from source..."
+        git clone --depth=1 --branch 0.4.1 https://github.com/wlrfx/scenefx.git "${tmp_dir}/scenefx" 2>&1 | tee -a "${LOG_FILE}"
+        meson setup "${tmp_dir}/scenefx/build" "${tmp_dir}/scenefx" --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
+        ninja -C "${tmp_dir}/scenefx/build" 2>&1 | tee -a "${LOG_FILE}"
+        sudo ninja -C "${tmp_dir}/scenefx/build" install 2>&1 | tee -a "${LOG_FILE}"
+    fi
+
+    # Install mango binary and desktop session
+    log_info "Fetching and installing mango binaries and desktop session..."
+    local deb_path="${tmp_dir}/mangowc.deb"
+    if curl -fsSL "https://apt.justaguy.dev/pool/main/mangowc_0.14.4-6_amd64.deb" -o "${deb_path}"; then
+        local unpack_dir="${tmp_dir}/unpacked"
+        mkdir -p "${unpack_dir}"
+        dpkg -x "${deb_path}" "${unpack_dir}"
+        sudo cp -a "${unpack_dir}/usr/bin/"* /usr/local/bin/
+        sudo cp -a "${unpack_dir}/usr/share/wayland-sessions" /usr/share/ 2>/dev/null || true
+        sudo cp -a "${unpack_dir}/usr/share/xdg-desktop-portal" /usr/share/ 2>/dev/null || true
+        sudo cp -a "${unpack_dir}/etc/mango" /etc/ 2>/dev/null || true
+        sudo ln -sfn /usr/local/bin/mango /usr/local/bin/mangowc
+        sudo ldconfig
+        log_ok "Mango compositor installed successfully to /usr/local/bin/mango."
+    else
+        log_err "Failed to download mangowc package."
+    fi
+
+    rm -rf "${tmp_dir}"
+}
+
+install_noctalia_greeter_pkg() {
+    if command -v noctalia-greeter-session >/dev/null 2>&1; then
+        log_ok "noctalia-greeter-session already installed."
+        return 0
+    fi
+
+    log_info "Installing noctalia-greeter for Ubuntu 26.04..."
+    local greeter_deps=(
+        meson ninja-build pkg-config g++ just dbus
+        libwayland-dev wayland-protocols
+        libegl-dev libgles-dev libfreetype-dev libfontconfig-dev
+        libcairo2-dev libpango1.0-dev libharfbuzz-dev libxkbcommon-dev
+        libglib2.0-dev libtomlplusplus-dev nlohmann-json3-dev libstb-dev
+        libwebp-dev librsvg2-dev libxml2-dev
+    )
+    sudo apt-get install -y "${greeter_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
+
+    local tmp_dir="/tmp/noctalia-greeter-$$"
+    mkdir -p "${tmp_dir}"
+
+    # Build and install wlroots 0.20 if missing
+    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
+        log_info "Building wlroots 0.20 dependency for noctalia-greeter..."
+        git clone --depth=1 --branch 0.20.2 https://gitlab.freedesktop.org/wlroots/wlroots.git "${tmp_dir}/wlroots" 2>&1 | tee -a "${LOG_FILE}"
+        cd "${tmp_dir}/wlroots"
+        meson subprojects download 2>&1 | tee -a "${LOG_FILE}" || true
+        if [[ -f subprojects/wayland-protocols/include/wayland-protocols/meson.build ]]; then
+            sed -i "s/'--strict',//g" subprojects/wayland-protocols/include/wayland-protocols/meson.build
+        fi
+        meson setup build --prefix=/usr/local -Dexamples=false --force-fallback-for=wayland-protocols 2>&1 | tee -a "${LOG_FILE}"
+        ninja -C build 2>&1 | tee -a "${LOG_FILE}"
+        sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
+        sudo ldconfig
+        cd - >/dev/null
+    fi
+
+    # Build and install noctalia-greeter
+    log_info "Building noctalia-greeter from source..."
+    git clone --depth=1 https://github.com/noctalia-dev/noctalia-greeter.git "${tmp_dir}/noctalia-greeter" 2>&1 | tee -a "${LOG_FILE}"
+    cd "${tmp_dir}/noctalia-greeter"
+    PKG_CONFIG_PATH="/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+        meson setup build --prefix=/usr/local --buildtype=release 2>&1 | tee -a "${LOG_FILE}"
+    ninja -C build 2>&1 | tee -a "${LOG_FILE}"
+    sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
+    sudo cp -a scripts/noctalia-greeter-session /usr/local/bin/
+    sudo chmod +x /usr/local/bin/noctalia-greeter-session
+    sudo ln -sfn /usr/local/bin/noctalia-greeter-session /usr/bin/noctalia-greeter-session
+    sudo ln -sfn /usr/local/bin/noctalia-greeter /usr/bin/noctalia-greeter
+    sudo ldconfig
+    cd - >/dev/null
+
+    rm -rf "${tmp_dir}"
+    log_ok "noctalia-greeter installed successfully."
+}
+
 install_core_packages() {
     log_info "Installing core packages for Ubuntu 26.04..."
 
@@ -110,6 +212,7 @@ install_core_packages() {
     )
 
     pkg_install "${core_pkgs[@]}"
+    install_mango
 
     # Verify Quickshell
     if command -v quickshell >/dev/null 2>&1 || command -v qs >/dev/null 2>&1; then
@@ -130,9 +233,6 @@ install_core_packages() {
 
 install_greeter_packages() {
     log_info "Checking / installing greetd and noctalia-greeter packages..."
-    local greeter_pkgs=(
-        greetd
-        noctalia-greeter
-    )
-    pkg_install "${greeter_pkgs[@]}"
+    pkg_install greetd
+    install_noctalia_greeter_pkg
 }

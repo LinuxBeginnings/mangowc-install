@@ -24,11 +24,14 @@
 - Greetd / Display Manager Handling
   - Removed `--now` flag when disabling competing display managers and enabling `greetd.service` across all distros
   - Prevents killing active graphical sessions and abruptly terminating `install.sh` during greeter setup
+- Debian Install
+  - Added `distros/debian/setup.sh` and updated `distros/debian/packages.sh`
+  - Added automated build/installation for `mango` (mangowc) and `noctalia-greeter` on Debian
+  - Added `pkg_in_repos` and `pkg_can_install` safety checks to prevent package installation aborts
 - Ubuntu Install
   - Added support for Ubuntu 26.04+
   - Enforced minimum required version 26.04 (exits with error on < 26.04)
-  - Added `distros/ubuntu/setup.sh` and `distros/ubuntu/packages.sh` with ButterRepo repository configuration
-    - Which caused conflict in quickshell and mangowc
+  - Added automated build/installation for `mango` (mangowc) and `noctalia-greeter` on Ubuntu 26.04
   - Updated noctalia-greeter Polkit rule to permit `sudo` group for Ubuntu/Debian
 - Arch Install
   - Fixed packages to be installed
