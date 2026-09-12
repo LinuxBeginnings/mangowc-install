@@ -69,44 +69,57 @@ install_mango() {
     fi
 
     log_info "Installing Mango compositor from source..."
-    local wlroots_pkg="libwlroots-0.19-dev"
-    if ! pkg_in_repos "${wlroots_pkg}"; then
-        wlroots_pkg="libwlroots-dev"
-    fi
-
     local build_deps=(
-        "${wlroots_pkg}" meson ninja-build pkg-config libwayland-dev
-        wayland-protocols libdrm-dev libegl-dev libgles-dev libpixman-1-dev
-        libcjson-dev libpcre2-dev libinput-dev libxkbcommon-dev libxcb-icccm4-dev
+        meson ninja-build pkg-config git gcc g++
+        libwayland-dev wayland-protocols
+        libdrm-dev libegl-dev libgles-dev libgbm-dev
+        libxkbcommon-dev libpixman-1-dev libcjson-dev libpcre2-dev libinput-dev
+        libxcb-icccm4-dev libxcb-xinput-dev libxcb-ewmh-dev libxcb-composite0-dev
+        libxcb-res0-dev libxcb-errors-dev
+        liblcms2-dev libseat-dev libliftoff-dev libdisplay-info-dev hwdata libudev-dev
+        glslang-tools libvulkan-dev
+        libpango1.0-dev
     )
-    sudo apt-get install -y "${build_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
+    pkg_install "${build_deps[@]}"
 
     local tmp_dir="/tmp/mango-install-$$"
     mkdir -p "${tmp_dir}"
+    export PKG_CONFIG_PATH="/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 
-    # Build and install scenefx 0.4.1 if missing
-    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libscenefx-0.4.so && ! -f /usr/local/lib/libscenefx-0.4.so ]]; then
-        log_info "Building scenefx 0.4.1 from source..."
-        git clone --depth=1 --branch 0.4.1 https://github.com/wlrfx/scenefx.git "${tmp_dir}/scenefx" 2>&1 | tee -a "${LOG_FILE}"
+    # Build and install wlroots 0.20 if missing (mango >= 0.17 requires it)
+    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
+        log_info "Building wlroots 0.20.2 from source..."
+        git clone --depth=1 --branch 0.20.2 https://gitlab.freedesktop.org/wlroots/wlroots.git "${tmp_dir}/wlroots" 2>&1 | tee -a "${LOG_FILE}"
+        cd "${tmp_dir}/wlroots"
+        meson subprojects download 2>&1 | tee -a "${LOG_FILE}" || true
+        if [[ -f subprojects/wayland-protocols/include/wayland-protocols/meson.build ]]; then
+            sed -i "s/'--strict',//g" subprojects/wayland-protocols/include/wayland-protocols/meson.build
+        fi
+        meson setup build --prefix=/usr/local -Dexamples=false --force-fallback-for=wayland-protocols 2>&1 | tee -a "${LOG_FILE}"
+        ninja -C build 2>&1 | tee -a "${LOG_FILE}"
+        sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
+        sudo ldconfig
+        cd - >/dev/null
+    fi
+
+    # Build and install scenefx 0.5 if missing
+    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libscenefx-0.5.so && ! -f /usr/local/lib/libscenefx-0.5.so ]]; then
+        log_info "Building scenefx 0.5 from source..."
+        git clone --depth=1 --branch 0.5 https://github.com/wlrfx/scenefx.git "${tmp_dir}/scenefx" 2>&1 | tee -a "${LOG_FILE}"
         meson setup "${tmp_dir}/scenefx/build" "${tmp_dir}/scenefx" --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
         ninja -C "${tmp_dir}/scenefx/build" 2>&1 | tee -a "${LOG_FILE}"
         sudo ninja -C "${tmp_dir}/scenefx/build" install 2>&1 | tee -a "${LOG_FILE}"
         sudo ldconfig
     fi
 
-    # Build and install mango 0.14.4 from source
-    log_info "Building mango 0.14.4 from source..."
-    git clone --depth=1 --branch 0.14.4 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
+    # Build and install mango 0.17.0 from source
+    log_info "Building mango 0.17.0 from source..."
+    git clone --depth=1 --branch 0.17.0 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
     cd "${tmp_dir}/mango"
-    C_INCLUDE_PATH="/usr/local/include:${C_INCLUDE_PATH:-}" \
-    PKG_CONFIG_PATH="/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+    PKG_CONFIG_PATH="${PKG_CONFIG_PATH}" \
         meson setup build --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
     ninja -C build 2>&1 | tee -a "${LOG_FILE}"
     sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
-    gcc -O2 -o mmsg/mmsg mmsg/mmsg.c -lcjson 2>&1 | tee -a "${LOG_FILE}" || true
-    if [[ -f mmsg/mmsg ]]; then
-        sudo cp -a mmsg/mmsg /usr/local/bin/
-    fi
     cd - >/dev/null
 
     # Create session wrapper and desktop entries
