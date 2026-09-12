@@ -15,28 +15,13 @@ configure_ubuntu_repos() {
         sudo add-apt-repository -y universe 2>&1 | tee -a "${LOG_FILE}" || true
     fi
 
-    # Configure ButterRepo (provides mangowc, quickshell)
-    local butter_url="https://apt.justaguy.dev"
-    local butter_key="/usr/share/keyrings/butterrepo.gpg"
+    # Note: ButterRepo debs are compiled for Debian Trixie (Qt 6.8 / libdisplay-info2)
+    # and conflict with Ubuntu 26.04's Qt 6.10 / libdisplay-info3 stack.
+    # If an incompatible ButterRepo source exists on Ubuntu 26.04, disable it.
     local butter_list="/etc/apt/sources.list.d/butterrepo.list"
-    local butter_line="deb [arch=amd64 signed-by=${butter_key}] ${butter_url} stable main"
-
-    local needs_key=0
-    if [[ ! -f "${butter_key}" ]]; then
-        needs_key=1
-    fi
-
-    if [[ "${needs_key}" -eq 1 || ! -f "${butter_list}" ]] || ! apt-cache policy butterrepo-keyring 2>/dev/null | grep -qE "butterrepo|justaguy"; then
-        log_info "Configuring ButterRepo repository for mangowc and quickshell..."
-        sudo apt-get install -y curl gnupg 2>&1 | tee -a "${LOG_FILE}"
-        if curl -fsSL "${butter_url}/key.asc" | sudo gpg --dearmor --yes -o "${butter_key}"; then
-            echo "${butter_line}" | sudo tee "${butter_list}" >/dev/null
-            log_ok "ButterRepo repository configured at ${butter_list}."
-        else
-            log_warn "Failed to download ButterRepo signing key."
-        fi
-    else
-        log_ok "ButterRepo already configured."
+    if [[ -f "${butter_list}" ]]; then
+        log_warn "Removing incompatible Debian-targeted ButterRepo on Ubuntu 26.04 to prevent ABI conflicts..."
+        sudo rm -f "${butter_list}"
     fi
 
     log_info "Updating package lists..."
