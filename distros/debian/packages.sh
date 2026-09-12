@@ -104,6 +104,10 @@ install_mango() {
         sudo cp -a "${unpack_dir}/usr/share/xdg-desktop-portal" /usr/share/ 2>/dev/null || true
         sudo cp -a "${unpack_dir}/etc/mango" /etc/ 2>/dev/null || true
         sudo ln -sfn /usr/local/bin/mango /usr/local/bin/mangowc
+        sudo ln -sfn /usr/local/bin/mango /usr/bin/mango
+        sudo ln -sfn /usr/local/bin/mangowc /usr/bin/mangowc
+        sudo ln -sfn /usr/local/bin/mango-session /usr/bin/mango-session
+        sudo ln -sfn /usr/local/bin/mmsg /usr/bin/mmsg
         sudo ldconfig
         log_ok "Mango compositor installed successfully to /usr/local/bin/mango."
     else
@@ -183,6 +187,7 @@ install_core_packages() {
         wlr-randr
         grim
         slurp
+        uwsm
         xdg-desktop-portal-wlr
         xdg-desktop-portal-gtk
 
