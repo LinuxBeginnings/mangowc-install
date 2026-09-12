@@ -24,7 +24,7 @@ fi
 
 # Reload Noctalia Shell
 if command -v noctalia >/dev/null 2>&1; then
-    noctalia msg reload 2>/dev/null || true
+    noctalia msg config-reload 2>/dev/null || noctalia msg reload 2>/dev/null || true
 fi
 
 notify-send "Config Reloaded" "Mango and Noctalia reloaded successfully" 2>/dev/null || true

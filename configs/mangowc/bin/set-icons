@@ -100,7 +100,7 @@ if [[ -f "$HOME/.config/qt5ct/qt5ct.conf" ]]; then
 fi
 
 if command -v noctalia >/dev/null 2>&1; then
-    noctalia msg reload 2>/dev/null || true
+    noctalia msg config-reload 2>/dev/null || noctalia msg reload 2>/dev/null || true
 fi
 
 echo "Icon theme set to ${ICON_THEME}!"
