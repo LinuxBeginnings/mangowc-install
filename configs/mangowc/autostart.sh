@@ -17,11 +17,17 @@ if command -v dbus-update-activation-environment >/dev/null 2>&1; then
     dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE MANGO_DOTS_VERSION MANGO_INSTANCE_SIGNATURE
 fi
 
-# If hyprpolkitagent is running or active in systemd, stop it for this mango session
+# Stop competing Hyprland background daemons that fail under Mango
 if command -v systemctl >/dev/null 2>&1; then
-    systemctl --user stop hyprpolkitagent.service 2>/dev/null || true
+    systemctl --user stop hyprpolkitagent.service hyprpaper.service hyprsunset.service hypridle.service swaync.service 2>/dev/null || true
 fi
 pkill -x hyprpolkitagent 2>/dev/null || true
+pkill -x hyprpaper 2>/dev/null || true
+pkill -x hyprsunset 2>/dev/null || true
+pkill -x swaync 2>/dev/null || true
+
+# Clean up stale Hyprland instance signatures so Noctalia connects to Mango
+unset HYPRLAND_INSTANCE_SIGNATURE
 
 # Start polkit authentication agent for MangoWM if not already running
 if ! pgrep -x xfce-polkit >/dev/null 2>&1; then
