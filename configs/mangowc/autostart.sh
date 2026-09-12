@@ -47,5 +47,6 @@ fi
 
 # Start Noctalia Shell (handles bar, launcher, wallpapers, notifications, dock)
 if command -v noctalia >/dev/null 2>&1; then
-    noctalia >/dev/null 2>&1 &
+    mkdir -p "${HOME}/.local/state/noctalia"
+    noctalia > "${HOME}/.local/state/noctalia/noctalia.log" 2>&1 &
 fi
