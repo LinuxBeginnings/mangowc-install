@@ -21,6 +21,9 @@
 
 ## Fixed:
 
+- Greetd / Display Manager Handling
+  - Removed `--now` flag when disabling competing display managers and enabling `greetd.service` across all distros
+  - Prevents killing active graphical sessions and abruptly terminating `install.sh` during greeter setup
 - Ubuntu Install
   - Added support for Ubuntu 26.04+
   - Enforced minimum required version 26.04 (exits with error on < 26.04)

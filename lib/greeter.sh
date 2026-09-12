@@ -104,15 +104,17 @@ EOF
     log_ok "/etc/greetd/config.toml updated successfully."
 
     # Disable competing display managers (lightdm, sddm, gdm, lxdm)
+    # Note: Do NOT use --now here, as stopping the active display manager immediately
+    # kills the current session and terminates the running install script.
     for dm in lightdm sddm gdm lxdm; do
         if systemctl list-unit-files "${dm}.service" 2>/dev/null | grep -q "${dm}"; then
             if systemctl is-enabled "${dm}.service" &>/dev/null; then
                 log_info "Disabling competing display manager: ${dm}.service..."
-                sudo systemctl disable --now "${dm}.service" 2>&1 | tee -a "${LOG_FILE}" || true
+                sudo systemctl disable "${dm}.service" 2>&1 | tee -a "${LOG_FILE}" || true
             fi
         fi
     done
-    sudo systemctl disable --now display-manager.service 2>/dev/null || true
+    sudo systemctl disable display-manager.service 2>/dev/null || true
 
     # Configure Polkit rules for Noctalia greeter appearance sync
     if [[ -d /etc/polkit-1/rules.d ]]; then
@@ -131,11 +133,12 @@ POLKIT_RULE
     fi
 
     # Enable greetd systemd service if systemd is active
+    # Note: Never use --now with greetd during install to avoid closing the active session prematurely.
     if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
         log_info "Enabling greetd.service via systemctl..."
         if sudo systemctl enable --force greetd.service 2>&1 | tee -a "${LOG_FILE}"; then
             sudo systemctl set-default graphical.target 2>&1 | tee -a "${LOG_FILE}" || true
-            log_ok "greetd.service enabled successfully as default display manager."
+            log_ok "greetd.service enabled successfully as default display manager (takes effect on reboot)."
         else
             log_err "Failed to enable greetd.service."
             return 1
