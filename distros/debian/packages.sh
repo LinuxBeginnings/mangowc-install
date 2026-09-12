@@ -8,7 +8,7 @@
 set -euo pipefail
 
 distro_setup() {
-    log_info "Updating Debian/Ubuntu package lists..."
+    log_info "Updating Debian package lists..."
     sudo apt-get update -y 2>&1 | tee -a "${LOG_FILE}"
 }
 

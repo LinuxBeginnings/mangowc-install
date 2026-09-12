@@ -90,8 +90,9 @@ mangowc/
 │   ├── fedora/
 │   │   ├── packages.sh         # Lean package lists (mangowm, noctalia, kitty, etc.)
 │   │   └── setup.sh            # DNF parallel downloads, COPR & Terra/RPM Fusion repos
-│   ├── arch/                   # Modular stub for Arch Linux
-│   └── debian/                 # Modular stub for Debian/Ubuntu
+│   ├── arch/                   # Arch Linux packages (yay/paru AUR support)
+│   ├── ubuntu/                 # Ubuntu 26.04+ (ButterRepo + APT packages)
+│   └── debian/                 # Modular stub for Debian
 └── configs/
     ├── btop/                   # Target: ~/.config/btop/
     │   └── btop.conf

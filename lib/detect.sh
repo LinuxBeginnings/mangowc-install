@@ -46,6 +46,8 @@ detect_distro() {
                 matched_distro="fedora"
             elif [[ "${os_like}" =~ arch ]]; then
                 matched_distro="arch"
+            elif [[ "${os_like}" =~ ubuntu ]]; then
+                matched_distro="ubuntu"
             elif [[ "${os_like}" =~ debian ]]; then
                 matched_distro="debian"
             else
@@ -54,13 +56,46 @@ detect_distro() {
             ;;
     esac
 
+    # Enforce minimum version for Ubuntu (>= 26.04)
+    if [[ "${matched_distro}" == "ubuntu" ]]; then
+        local min_version="26.04"
+        local clean_version
+        clean_version="$(echo "${os_version}" | grep -oE '^[0-9]+(\.[0-9]+)*' || true)"
+
+        if [[ -z "${clean_version}" || "${clean_version}" =~ ^[0-9]+$ ]]; then
+            local ubuntu_codename=""
+            ubuntu_codename="$(grep -E '^(UBUNTU_CODENAME|VERSION_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"' | head -n1 || true)"
+            case "${ubuntu_codename}" in
+                resolute*) clean_version="26.04" ;;
+                questing*) clean_version="26.10" ;;
+                noble*)    clean_version="24.04" ;;
+                jammy*)    clean_version="22.04" ;;
+                focal*)    clean_version="20.04" ;;
+            esac
+        fi
+
+        if [[ -z "${clean_version}" ]]; then
+            log_err "Unable to determine Ubuntu version from /etc/os-release."
+            log_err "This installer requires Ubuntu ${min_version} or newer. Exiting."
+            exit 1
+        fi
+
+        local lowest
+        lowest="$(printf '%s\n%s\n' "${min_version}" "${clean_version}" | sort -V | head -n1)"
+        if [[ "${lowest}" != "${min_version}" ]]; then
+            log_err "Unsupported Ubuntu version: ${os_version:-unknown} (${os_name:-Ubuntu})."
+            log_err "This installer requires Ubuntu ${min_version} or newer. Exiting."
+            exit 1
+        fi
+    fi
+
     export DETECTED_DISTRO="${matched_distro}"
     export DETECTED_OS_NAME="${os_name:-${os_id}}"
     export DETECTED_VERSION_ID="${os_version}"
 
     if [[ "${matched_distro}" == "unsupported" ]]; then
         log_warn "Distribution '${os_name}' (ID: ${os_id}) is not directly supported."
-        log_warn "Supported distros currently include: Fedora (with Arch/Debian extensible)."
+        log_warn "Supported distros currently include: Fedora, Arch, Ubuntu (>= 26.04)."
     else
         log_ok "Detected supported distribution: ${DETECTED_OS_NAME} (${DETECTED_DISTRO})"
     fi

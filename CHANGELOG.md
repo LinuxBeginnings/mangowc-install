@@ -21,6 +21,11 @@
 
 ## Fixed:
 
+- Ubuntu Install
+  - Added support for Ubuntu 26.04+
+  - Enforced minimum required version 26.04 (exits with error on < 26.04)
+  - Added `distros/ubuntu/setup.sh` and `distros/ubuntu/packages.sh` with ButterRepo repository configuration
+  - Updated noctalia-greeter Polkit rule to permit `sudo` group for Ubuntu/Debian
 - Arch Install
   - Fixed packages to be installed
   - `install.sh` now supports `yay` or `paru`

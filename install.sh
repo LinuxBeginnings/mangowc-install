@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-export MANGO_DOTS_VERSION="0.0.1"
+export MANGO_DOTS_VERSION="0.0.2"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export SCRIPT_DIR
@@ -178,12 +178,18 @@ main() {
     if [[ -f "${distro_dir}/setup.sh" ]]; then
         # shellcheck source=/dev/null
         source "${distro_dir}/setup.sh"
-        distro_setup
     fi
 
     if [[ -f "${distro_dir}/packages.sh" ]]; then
         # shellcheck source=/dev/null
         source "${distro_dir}/packages.sh"
+    fi
+
+    if declare -f distro_setup >/dev/null 2>&1; then
+        distro_setup
+    fi
+
+    if declare -f install_core_packages >/dev/null 2>&1; then
         install_core_packages
     fi
 

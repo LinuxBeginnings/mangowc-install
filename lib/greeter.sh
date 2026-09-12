@@ -119,7 +119,7 @@ EOF
         log_info "Installing Polkit rule for Noctalia greeter appearance sync..."
         sudo tee /etc/polkit-1/rules.d/50-noctalia-greeter.rules >/dev/null <<'POLKIT_RULE'
 polkit.addRule(function(action, subject) {
-    if (subject.isInGroup("wheel")) {
+    if (subject.isInGroup("wheel") || subject.isInGroup("sudo")) {
         if (action.id == "org.noctalia.greeter.sync-appearance" ||
             action.id == "org.freedesktop.systemd1.manage-units") {
             return polkit.Result.YES;
