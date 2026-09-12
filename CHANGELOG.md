@@ -21,6 +21,9 @@
 
 ## Fixed:
 
+- Arch Install
+  - Fixed packages to be installed
+  - `install.sh` now supports `yay` or `paru`
 - Polkit escalation issues
   - Check for hyprlandpolkit service
     - stop service
