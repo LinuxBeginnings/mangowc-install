@@ -90,11 +90,16 @@ install_noctalia_greeter() {
         sudo chmod 0750 "${state_dir}" || true
     fi
 
+    local target_vt=1
+    if [[ "${DETECTED_DISTRO:-}" =~ debian|ubuntu ]]; then
+        target_vt=7
+    fi
+
     # Write greetd configuration
-    log_info "Writing /etc/greetd/config.toml pointing to ${session_bin} (${session_name})..."
+    log_info "Writing /etc/greetd/config.toml pointing to ${session_bin} (${session_name}) on vt ${target_vt}..."
     sudo tee /etc/greetd/config.toml >/dev/null <<EOF
 [terminal]
-vt = 1
+vt = ${target_vt}
 
 [default_session]
 command = "${session_bin} -- --session ${session_name}"

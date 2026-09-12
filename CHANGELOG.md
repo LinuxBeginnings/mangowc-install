@@ -2,42 +2,58 @@
 
 ## MangoWC-Dots -- Current version v0.0.2
 
-- A simple installer to install mangowc compositor on differnt distros
+- A simple installer to install mangowc compositor on different distros
 - Using the noctalia shell by default
 - Distros:
   - Fedora 44+
-    - Only one tested thus far
   - Arch
-    - Not tested
-  - Debian/Ubuntu
-    - Mot tested
-    - Also likely to have version issues
-      - Likely only Debian Forky+
-      - Ubuntu 26.04.1+
+  - Debian
+  - Ubuntu 26.04+
 
 ## Sept 2026
 
 - Initial commit 9/9/2026
 
-## Fixed:
+## Fixed / Added:
 
-- Greetd / Display Manager Handling
-  - Removed `--now` flag when disabling competing display managers and enabling `greetd.service` across all distros
-  - Prevents killing active graphical sessions and abruptly terminating `install.sh` during greeter setup
-- Debian Install
-  - Added `distros/debian/setup.sh` and updated `distros/debian/packages.sh`
-  - Added automated build/installation for `mango` (mangowc) and `noctalia-greeter` on Debian
-  - Added `pkg_in_repos` and `pkg_can_install` safety checks to prevent package installation aborts
-- Ubuntu Install
-  - Added support for Ubuntu 26.04+
-  - Enforced minimum required version 26.04 (exits with error on < 26.04)
-  - Added automated build/installation for `mango` (mangowc) and `noctalia-greeter` on Ubuntu 26.04
-  - Updated noctalia-greeter Polkit rule to permit `sudo` group for Ubuntu/Debian
+- Noctalia Update Utility (`--update-noctalia`)
+  - Added `--update-noctalia` command line flag to `install.sh`
+  - Added `lib/update.sh` to query installed vs. latest GitHub releases/tags for `noctalia` and `noctalia-greeter`
+  - Added formatted comparison table displaying Installed Version, Updated Version, and Status
+  - Added interactive `Y/n` prompt to perform automated upgrades across supported distros
+
+- Greetd & Display Manager Session Fixes (`lib/greeter.sh`)
+  - Removed `--now` flag from `systemctl disable` and `systemctl enable` calls across all distros to avoid abruptly closing active graphical sessions and killing the installer
+  - Configured `vt = 7` on Debian and Ubuntu to match `greetd.service` (`Conflicts=getty@tty7.service`) and prevent `getty@tty1.service` from resetting the terminal and killing the session
+  - Updated `/etc/greetd/config.toml` session path and desktop session launching
+  - Added `sudo` group support alongside `wheel` to `/etc/polkit-1/rules.d/50-noctalia-greeter.rules` for Debian and Ubuntu
+
+- Ubuntu 26.04+ Support (`distros/ubuntu/`)
+  - Added full Ubuntu support with minimum version enforcement (`>= 26.04`, exits on `< 26.04`) in `lib/detect.sh`
+  - Created `distros/ubuntu/setup.sh` to configure repositories and prevent incompatible Debian Trixie ButterRepo packages (which caused Qt 6.8 vs. 6.10 private ABI and `libdisplay-info2` vs. `libdisplay-info3` conflicts)
+  - Created `distros/ubuntu/packages.sh` with safe APT candidate checking (`pkg_in_repos` and `pkg_can_install`)
+  - Added automated build/installation for `mango` (mangowc) and `scenefx 0.4.1` against native `libwlroots-0.19`
+  - Added automated build/installation for `noctalia` desktop shell (v5.1.0) with complete assets
+  - Added automated build/installation for `noctalia-greeter` (v1.5.0) with bundled `wlroots 0.20`
+  - Deployed `/usr/bin/` symlinks for `mango`, `mangowc`, `mango-session`, `mmsg`, `noctalia`, `noctalia-greeter`, and `noctalia-greeter-session`
+  - Added `uwsm` to core packages to support UWSM-managed Wayland desktop sessions
+
+- Debian Support (`distros/debian/`)
+  - Created `distros/debian/setup.sh` and updated `distros/debian/packages.sh`
+  - Added automated build and install routines for `mango` (mangowc), `noctalia` shell, and `noctalia-greeter`
+  - Added `pkg_in_repos` and `pkg_can_install` dry-run checks to prevent APT solver aborts on missing packages
+  - Ensured identical `/usr/bin/` binary symlinks and `uwsm` support
+
+- Mango Configuration & Monitor Settings
+  - Updated `configs/mangowc/monitor.conf` to use native preferred resolution and refresh rate (`width:0,height:0,refresh:0`) instead of forcing 1080p60 on high-resolution/high-refresh displays
+  - Fixed `mango-session` to look in `/usr/local/bin/mango` in addition to `/usr/bin/mango`
+  - Synchronized `MANGO_DOTS_VERSION="0.0.2"` across `install.sh` and `lib/common.sh`
+
 - Arch Install
   - Fixed packages to be installed
   - `install.sh` now supports `yay` or `paru`
-- Polkit escalation issues
-  - Check for hyprlandpolkit service
-    - stop service
+
+- Polkit Escalation Issues
+  - Check for hyprlandpolkit service and stop it for Mango sessions
   - Added `xfce-polkit` to handle GUI priv escalation requests
-    - Added polkit rules for noctalia greeter wallpaper sync feature
+  - Added Polkit rules for noctalia-greeter wallpaper sync feature

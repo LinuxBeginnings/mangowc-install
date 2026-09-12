@@ -117,6 +117,53 @@ install_mango() {
     rm -rf "${tmp_dir}"
 }
 
+install_noctalia_shell() {
+    if command -v noctalia >/dev/null 2>&1; then
+        log_ok "Noctalia desktop shell already installed."
+        return 0
+    fi
+
+    log_info "Installing Noctalia desktop shell..."
+    local shell_deps=(
+        meson g++ just pkg-config
+        libwayland-dev wayland-protocols
+        libegl-dev libgles-dev
+        libfreetype-dev libfontconfig-dev
+        libcairo2-dev libpango1.0-dev libharfbuzz-dev
+        libxkbcommon-dev libglib2.0-dev
+        libsecret-1-dev libsodium-dev
+        libsdbus-c++-dev libpipewire-0.3-dev libwireplumber-0.5-dev
+        libpam0g-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev
+        libwebp-dev libjxl-dev libsndfile1-dev librsvg2-dev
+        libqalculate-dev libxml2-dev
+        libmd4c-dev libtomlplusplus-dev libical-dev
+        nlohmann-json3-dev libstb-dev
+        libjemalloc-dev
+    )
+    sudo apt-get install -y "${shell_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
+
+    local tmp_dir="/tmp/noctalia-shell-$$"
+    mkdir -p "${tmp_dir}"
+
+    log_info "Downloading Noctalia v5 source release..."
+    if curl -fsSL "https://github.com/noctalia-dev/noctalia/releases/download/v5.1.0/noctalia-latest.tar.gz" -o "${tmp_dir}/noctalia.tar.gz"; then
+        tar -xzf "${tmp_dir}/noctalia.tar.gz" -C "${tmp_dir}"
+        local src_dir="${tmp_dir}/noctalia-release"
+        cd "${src_dir}"
+        meson setup build --prefix=/usr/local --buildtype=release 2>&1 | tee -a "${LOG_FILE}"
+        ninja -C build 2>&1 | tee -a "${LOG_FILE}"
+        sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
+        sudo ln -sfn /usr/local/bin/noctalia /usr/bin/noctalia
+        sudo ldconfig
+        cd - >/dev/null
+        log_ok "Noctalia desktop shell installed successfully."
+    else
+        log_err "Failed to download Noctalia source release."
+    fi
+
+    rm -rf "${tmp_dir}"
+}
+
 install_noctalia_greeter_pkg() {
     if command -v noctalia-greeter-session >/dev/null 2>&1; then
         log_ok "noctalia-greeter-session already installed."
@@ -223,6 +270,14 @@ install_core_packages() {
 
     pkg_install "${core_pkgs[@]}"
     install_mango
+    install_noctalia_shell
+
+    # Verify Noctalia desktop shell
+    if command -v noctalia >/dev/null 2>&1; then
+        log_ok "Noctalia desktop shell verified."
+    else
+        log_warn "Noctalia desktop shell binary ('noctalia') not found on PATH."
+    fi
 
     # Verify Quickshell
     if command -v quickshell >/dev/null 2>&1 || command -v qs >/dev/null 2>&1; then

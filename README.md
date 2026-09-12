@@ -71,6 +71,7 @@ The installer supports several non-interactive and debugging flags:
 | `--remove-greeter` | Restore previous display manager / `greetd` configuration |
 | `--skip-greeter` | Skip login manager / greeter configuration |
 | `--no-wallpapers` | Bypass wallpaper bank download prompt |
+| `--update-noctalia` | Check for Noctalia & Greeter updates and prompt to upgrade |
 | `-h`, `--help` | Display usage options |
 
 ---

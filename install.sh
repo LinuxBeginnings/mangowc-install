@@ -16,6 +16,7 @@ export SCRIPT_DIR
 DEBUG=0
 GREETER_ACTION="prompt"   # prompt, install, remove, skip
 DOWNLOAD_WALLPAPERS=1    # 1=prompt, 0=skip
+ACTION="install"         # install, update-noctalia
 
 print_usage() {
     cat <<'EOF'
@@ -27,6 +28,7 @@ Options:
   --remove-greeter        Remove / restore previous greeter configuration
   --skip-greeter          Skip greeter configuration entirely
   --no-wallpapers         Skip wallpaper download prompt
+  --update-noctalia       Check for Noctalia and Noctalia Greeter updates and prompt to upgrade
   -h, --help              Show this help message and exit
 
 Examples:
@@ -55,6 +57,9 @@ while [[ $# -gt 0 ]]; do
         --no-wallpapers)
             DOWNLOAD_WALLPAPERS=0
             ;;
+        --update-noctalia)
+            ACTION="update-noctalia"
+            ;;
         -h|--help)
             print_usage
             exit 0
@@ -77,6 +82,8 @@ source "${SCRIPT_DIR}/lib/detect.sh"
 source "${SCRIPT_DIR}/lib/greeter.sh"
 # shellcheck source=lib/wallpapers.sh
 source "${SCRIPT_DIR}/lib/wallpapers.sh"
+# shellcheck source=lib/update.sh
+source "${SCRIPT_DIR}/lib/update.sh"
 
 if [[ "${DEBUG}" == "1" ]]; then
     set -x
@@ -183,6 +190,11 @@ main() {
     if [[ -f "${distro_dir}/packages.sh" ]]; then
         # shellcheck source=/dev/null
         source "${distro_dir}/packages.sh"
+    fi
+
+    if [[ "${ACTION}" == "update-noctalia" ]]; then
+        check_and_update_noctalia
+        exit 0
     fi
 
     if declare -f distro_setup >/dev/null 2>&1; then
