@@ -16,6 +16,11 @@
 
 ## Fixed / Added:
 
+- Default rules: 
+  - Google Chrome on Tag 2 
+  - Discovery on Tag 3 
+  - OBS studio on Tag 9 
+
 - Hot spot 
   - Move mouse to lower left corner to activate overview mode
 
