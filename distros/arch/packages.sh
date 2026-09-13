@@ -132,7 +132,7 @@ install_core_packages() {
         grim slurp gpu-screen-recorder xdg-desktop-portal-wlr xdg-desktop-portal-gtk
 
         # Terminal & system info
-        kitty fastfetch yazi thunar eza htop btop zoxide
+        kitty fastfetch yazi thunar eza htop btop zoxide cava
 
         # Quickshell & Qt6 dependencies
         quickshell qt6-5compat qt6-declarative qt6-wayland qt6-svg qt6-multimedia
@@ -151,6 +151,9 @@ install_core_packages() {
     else
         log_warn "mangowm / mangowc executable not found. Ensure mangowm is installed."
     fi
+
+    # Verify Rustup / Cargo toolchain
+    check_rustup_cargo
 }
 
 install_greeter_packages() {

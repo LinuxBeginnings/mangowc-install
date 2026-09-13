@@ -1,6 +1,6 @@
 # CHANGELOG.MD
 
-## MangoWC-Dots -- Current version v0.0.3
+## MangoWC-Dots -- Current version v0.0.4
 
 - A simple installer to install mangowc compositor on different distros
 - Using the noctalia shell by default
@@ -15,6 +15,12 @@
 - Initial commit 9/9/2026
 
 ## Fixed / Added:
+
+- Rustup & Cargo Toolchain Setup Check (`lib/common.sh`, `distros/*/packages.sh`)
+  - Added `check_rustup_cargo` to verify whether `rustup default stable` has been run when rustup is present, automatically configuring the default stable toolchain to finish Cargo installation across all distributions
+
+- Added `cava` Audio Visualizer Package (`distros/*/packages.sh`, `README.md`)
+  - Added `cava` console audio visualizer to core package lists across Arch, Debian, Fedora, and Ubuntu distributions
 
 - Default Monitor Rule for Virtual Displays (`configs/mangowc/monitor.conf`)
   - Added specific monitor rule `monitorrule=name:Virtual-1,width:1920,height:1080,refresh:60,x:0,y:0,scale:1.0,vrr:0` to ensure 1080p60 on QEMU/KVM virtual machine outputs instead of fallback sub-1080p preferred modes

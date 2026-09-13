@@ -127,3 +127,21 @@ backup_path() {
         log_debug "No existing path at '${target}' to backup."
     fi
 }
+
+# Check and configure default rustup toolchain to ensure cargo works
+check_rustup_cargo() {
+    if command -v rustup >/dev/null 2>&1; then
+        if ! command -v cargo >/dev/null 2>&1 || ! cargo --version >/dev/null 2>&1; then
+            log_info "Configuring default Rust toolchain via 'rustup default stable' to finish Cargo installation..."
+            rustup default stable 2>&1 | tee -a "${LOG_FILE}" || true
+        fi
+
+        if command -v cargo >/dev/null 2>&1 && cargo --version >/dev/null 2>&1; then
+            log_ok "Cargo verified ($(cargo --version 2>/dev/null | head -n1))."
+        else
+            log_warn "Cargo is not functional. Please run 'rustup default stable' to finish setup."
+        fi
+    elif command -v cargo >/dev/null 2>&1; then
+        log_ok "Cargo verified ($(cargo --version 2>/dev/null | head -n1))."
+    fi
+}

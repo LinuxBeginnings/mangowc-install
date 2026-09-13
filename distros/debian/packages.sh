@@ -417,6 +417,7 @@ install_core_packages() {
         htop
         btop
         zoxide
+        cava
 
         # Theming & Appearance
         bibata-cursor-theme
@@ -475,6 +476,9 @@ install_core_packages() {
     else
         log_info "Noctalia greeter is NOT installed."
     fi
+
+    # Verify Rustup / Cargo toolchain
+    check_rustup_cargo
 }
 
 install_greeter_packages() {
