@@ -16,6 +16,8 @@
 
 ## Fixed / Added:
 
+- Volume knob bindings 
+
 - Default rules: 
   - Google Chrome on Tag 2 
   - Discovery on Tag 3 
