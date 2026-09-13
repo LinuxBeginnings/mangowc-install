@@ -16,6 +16,11 @@
 
 ## Fixed / Added:
 
+- Passthrough Mode Submap (`keymode`)
+  - Added a passthrough submap (`keymode=passthrough`) in `configs/mangowc/bind.conf` that temporarily disables host-level keyboard and mouse bindings so input passes directly through to guest applications (such as virtual machines, `remote-viewer`, RDP, or VNC).
+  - Enable: Press `SUPER + P` to enter passthrough mode.
+  - Disable: Press `SUPER + Escape` to return to default host control.
+
 - Default Layout Changed to Dwindle
   - Switched `MANGO_DEFAULT_LAYOUT` from `scroller` to `dwindle` in `configs/mangowc/env.conf`
   - Updated all nine `tagrule` layout entries in `configs/mangowc/tag.conf` to use `dwindle`
