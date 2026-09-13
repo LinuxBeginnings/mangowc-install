@@ -7,6 +7,12 @@
 
 set -euo pipefail
 
+# Check if noctalia-greeter-session is installed
+is_noctalia_greeter_installed() {
+    command -v noctalia-greeter-session >/dev/null 2>&1 || \
+    [[ -x /usr/local/bin/noctalia-greeter-session || -x /usr/bin/noctalia-greeter-session ]]
+}
+
 # Check if greetd and noctalia-greeter are available
 check_greeter_binaries() {
     local missing=0
@@ -15,7 +21,7 @@ check_greeter_binaries() {
         missing=1
     fi
 
-    if ! command -v noctalia-greeter-session >/dev/null 2>&1 && [[ ! -x /usr/local/bin/noctalia-greeter-session && ! -x /usr/bin/noctalia-greeter-session ]]; then
+    if ! is_noctalia_greeter_installed; then
         log_warn "noctalia-greeter-session binary is not found."
         missing=1
     fi
@@ -39,11 +45,24 @@ install_noctalia_greeter() {
     log_info "Configuring greetd with noctalia-greeter..."
 
     # Ensure greetd and noctalia-greeter packages are installed first
-    if ! command -v greetd >/dev/null 2>&1 || ! command -v noctalia-greeter-session >/dev/null 2>&1; then
+    if ! command -v greetd >/dev/null 2>&1 || ! is_noctalia_greeter_installed; then
         log_info "Required greeter packages missing. Installing..."
         if declare -f install_greeter_packages >/dev/null 2>&1; then
-            install_greeter_packages
+            install_greeter_packages || true
         fi
+    fi
+
+    # Explicitly verify noctalia-greeter was installed
+    if ! is_noctalia_greeter_installed; then
+        log_err "noctalia-greeter ('noctalia-greeter-session') is NOT installed."
+        log_warn "greetd configuration aborted to protect your existing display manager and prevent login lockout."
+        return 1
+    fi
+
+    if ! command -v greetd >/dev/null 2>&1; then
+        log_err "greetd binary is NOT installed or not found in PATH."
+        log_warn "greetd configuration aborted."
+        return 1
     fi
 
     # Ensure greetd directory exists
@@ -67,8 +86,13 @@ install_noctalia_greeter() {
         session_bin="$(command -v noctalia-greeter-session)"
     elif [[ -x /usr/local/bin/noctalia-greeter-session ]]; then
         session_bin="/usr/local/bin/noctalia-greeter-session"
-    else
+    elif [[ -x /usr/bin/noctalia-greeter-session ]]; then
         session_bin="/usr/bin/noctalia-greeter-session"
+    fi
+
+    if [[ -z "${session_bin}" ]]; then
+        log_err "Could not resolve valid executable path for noctalia-greeter-session."
+        return 1
     fi
 
     # Detect exact desktop session name (e.g. "Mango")
@@ -196,6 +220,11 @@ remove_noctalia_greeter() {
 prompt_greeter_action() {
     echo ""
     echo -e "${INFO} Noctalia Greeter (Login Manager Setup):"
+    if is_noctalia_greeter_installed; then
+        echo -e "  Current status: ${GREEN}noctalia-greeter is installed${RC}"
+    else
+        echo -e "  Current status: ${YELLOW}noctalia-greeter is NOT installed${RC}"
+    fi
     echo "  1) Install / Configure noctalia-greeter with greetd"
     echo "  2) Remove / Restore previous display manager / greetd config"
     echo "  3) Skip greeter configuration (default)"

@@ -16,8 +16,17 @@ get_installed_noctalia_version() {
 }
 
 get_installed_greeter_version() {
+    local bin=""
     if command -v noctalia-greeter >/dev/null 2>&1; then
-        noctalia-greeter --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.]+)?' | head -n1 || echo "unknown"
+        bin="$(command -v noctalia-greeter)"
+    elif [[ -x /usr/local/bin/noctalia-greeter ]]; then
+        bin="/usr/local/bin/noctalia-greeter"
+    elif [[ -x /usr/bin/noctalia-greeter ]]; then
+        bin="/usr/bin/noctalia-greeter"
+    fi
+
+    if [[ -n "${bin}" ]]; then
+        "${bin}" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.]+)?' | head -n1 || echo "unknown"
     else
         echo "not installed"
     fi

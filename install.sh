@@ -250,6 +250,18 @@ main() {
     log_ok "Installation complete!"
     log_info "Mango window manager dotfiles are installed at: ${HOME}/.config/mangowc"
     log_info "Fastfetch config installed at: ${HOME}/.config/fastfetch/config.jsonc"
+
+    # Report greeter installation status
+    if command -v noctalia-greeter-session >/dev/null 2>&1 || [[ -x /usr/local/bin/noctalia-greeter-session || -x /usr/bin/noctalia-greeter-session ]]; then
+        if systemctl is-enabled greetd.service &>/dev/null; then
+            log_ok "Login Manager: noctalia-greeter + greetd enabled."
+        else
+            log_info "Login Manager: noctalia-greeter is installed (greetd service not enabled)."
+        fi
+    else
+        log_warn "Login Manager: noctalia-greeter was NOT installed."
+    fi
+
     log_info "To start Mango, log out and select Mango from your display manager, or run 'mango' from TTY."
     echo ""
 }

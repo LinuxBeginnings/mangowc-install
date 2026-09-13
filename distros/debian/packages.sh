@@ -239,6 +239,28 @@ install_noctalia_shell() {
     )
     sudo apt-get install -y "${shell_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
 
+    # Ensure wayland-protocols provides ext-background-effect-v1.xml (added in wayland-protocols >= 1.45, required by Noctalia v5)
+    local wayland_protos_dir
+    wayland_protos_dir="$(pkg-config --variable=pkgdatadir wayland-protocols 2>/dev/null || echo "/usr/share/wayland-protocols")"
+    if [[ ! -f "${wayland_protos_dir}/staging/ext-background-effect/ext-background-effect-v1.xml" ]]; then
+        local codename="${DETECTED_CODENAME:-}"
+        if [[ -z "${codename}" ]]; then
+            codename="$(grep -E '^(VERSION_CODENAME|DEBIAN_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"' | head -n1 || echo "")"
+        fi
+        if [[ "${codename}" == "trixie" || "${DETECTED_VERSION_ID:-}" == "13" ]]; then
+            log_info "Updating wayland-protocols from trixie-backports for ext-background-effect protocol..."
+            sudo apt-get install -y -t trixie-backports wayland-protocols 2>&1 | tee -a "${LOG_FILE}" || true
+        fi
+    fi
+
+    # Fallback: fetch protocol XML directly if still missing from system wayland-protocols
+    if [[ ! -f "${wayland_protos_dir}/staging/ext-background-effect/ext-background-effect-v1.xml" ]]; then
+        log_info "Fetching missing ext-background-effect-v1.xml protocol definition..."
+        sudo mkdir -p "${wayland_protos_dir}/staging/ext-background-effect"
+        sudo curl -fsSL "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/staging/ext-background-effect/ext-background-effect-v1.xml" \
+            -o "${wayland_protos_dir}/staging/ext-background-effect/ext-background-effect-v1.xml" 2>&1 | tee -a "${LOG_FILE}" || true
+    fi
+
     local tmp_dir="/tmp/noctalia-shell-$$"
     mkdir -p "${tmp_dir}"
 
@@ -273,19 +295,21 @@ install_noctalia_greeter_pkg() {
     fi
 
     if [[ "${codename}" == "trixie" || "${DETECTED_VERSION_ID:-}" == "13" ]]; then
-        log_warn "noctalia-greeter requires wlroots-0.20 which is incompatible with Debian Trixie's native Wayland stack."
-        log_warn "Skipping noctalia-greeter compilation on Debian Trixie. greetd can be configured with an alternative greeter session."
-        return 0
+        log_warn "noctalia-greeter is NOT supported on Debian 13 (Trixie) due to wlroots 0.20 ABI incompatibility with Trixie's native Wayland stack."
+        log_warn "Skipping noctalia-greeter installation. greetd configuration will not be applied."
+        return 1
     fi
 
     log_info "Installing noctalia-greeter for Debian Forky/Sid..."
     local greeter_deps=(
-        meson ninja-build pkg-config g++ just dbus
+        meson ninja-build pkg-config git gcc g++ just dbus
         libwayland-dev wayland-protocols
         libegl-dev libgles-dev libfreetype-dev libfontconfig-dev
         libcairo2-dev libpango1.0-dev libharfbuzz-dev libxkbcommon-dev
         libglib2.0-dev libtomlplusplus-dev nlohmann-json3-dev libstb-dev
         libwebp-dev librsvg2-dev libxml2-dev
+        libinput-dev libdrm-dev libgbm-dev libseat-dev
+        libdisplay-info-dev libliftoff-dev libpixman-1-dev hwdata libudev-dev
     )
     sudo apt-get install -y "${greeter_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
 
@@ -324,6 +348,12 @@ install_noctalia_greeter_pkg() {
     cd - >/dev/null
 
     rm -rf "${tmp_dir}"
+
+    if [[ ! -x /usr/local/bin/noctalia-greeter-session && ! -x /usr/bin/noctalia-greeter-session ]]; then
+        log_err "noctalia-greeter installation failed: 'noctalia-greeter-session' binary was not created."
+        return 1
+    fi
+
     log_ok "noctalia-greeter installed successfully."
 }
 
@@ -437,6 +467,13 @@ install_core_packages() {
     else
         log_warn "Mango compositor binary ('mango' or 'mangowc') not found on PATH."
         log_warn "Ensure mangowc is compiled or installed for Debian."
+    fi
+
+    # Verify Noctalia greeter
+    if command -v noctalia-greeter-session >/dev/null 2>&1 || [[ -x /usr/local/bin/noctalia-greeter-session || -x /usr/bin/noctalia-greeter-session ]]; then
+        log_ok "Noctalia greeter verified."
+    else
+        log_info "Noctalia greeter is NOT installed."
     fi
 }
 

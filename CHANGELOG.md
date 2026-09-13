@@ -16,11 +16,23 @@
 
 ## Fixed / Added:
 
+- Default Monitor Rule for Virtual Displays (`configs/mangowc/monitor.conf`)
+  - Added specific monitor rule `monitorrule=name:Virtual-1,width:1920,height:1080,refresh:60,x:0,y:0,scale:1.0,vrr:0` to ensure 1080p60 on QEMU/KVM virtual machine outputs instead of fallback sub-1080p preferred modes
+
+- Noctalia Greeter Detection & Installation Safety Guards (`lib/greeter.sh`, `install.sh`, `distros/debian/packages.sh`, `distros/ubuntu/packages.sh`)
+  - Added binary existence verification (`is_noctalia_greeter_installed`) before configuring `greetd` to prevent broken `/etc/greetd/config.toml` setups and graphical login lockouts
+  - In `lib/greeter.sh`, aborts greetd setup and preserves existing display managers if `noctalia-greeter-session` is not installed or failed to compile
+  - Displays current greeter installation status in `prompt_greeter_action` menu and final `install.sh` installation summary
+  - Added explicit warnings and failure return code when greeter compilation is skipped on unsupported platforms (such as Debian 13 Trixie)
+  - Fixed missing build dependencies (`libinput-dev`, `libdrm-dev`, `libgbm-dev`, `libseat-dev`, `libdisplay-info-dev`, `libliftoff-dev`, `libpixman-1-dev`) in Ubuntu and Debian greeter package routines
+  - Added post-installation package verification check for Noctalia greeter alongside shell, Quickshell, and Mango
+
 - Debian Trixie (13) & Forky/Sid Differential Support (`distros/debian/`, `lib/detect.sh`)
   - Added Debian codename detection (`trixie`, `forky`, `sid`) via `VERSION_CODENAME`, `DEBIAN_CODENAME`, `/etc/debian_version`, and release names in `lib/detect.sh`, exporting `DETECTED_CODENAME`
   - Debian 13 (Trixie):
     - Configured ButterRepo (`https://apt.justaguy.dev`) and GPG signing key (`/usr/share/keyrings/butterrepo.gpg`) to install precompiled `mangowc` (v0.14.4 built against wlroots 0.19 and scenefx 0.4) via APT
     - Enabled `trixie-backports` repository to supply dependencies like `uwsm`
+    - Upgraded `wayland-protocols` from `trixie-backports` (v1.47+) to provide `ext-background-effect-v1.xml` required by Noctalia shell v5 (missing in Debian 13's base v1.44) with automated protocol fetch fallback
     - Skipped `noctalia-greeter` compilation with warning due to wlroots 0.20 incompatibility with Trixie's native Wayland stack
   - Debian 14 (Forky) / Sid:
     - Removed ButterRepo if present to prevent ABI conflicts with newer Wayland stacks
