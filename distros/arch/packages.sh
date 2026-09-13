@@ -30,6 +30,31 @@ pkg_in_repos() {
     pacman -Si "$1" &>/dev/null
 }
 
+# Get package version from official/configured repos
+get_repo_version() {
+    local pkg="$1"
+    pacman -Si "$pkg" 2>/dev/null | awk -F': ' '/^Version/ {print $2; exit}'
+}
+
+# Get package version from AUR via yay or paru
+get_aur_version() {
+    local pkg="$1"
+    local helper="$2"
+    if [[ "$helper" == "yay" ]]; then
+        yay -Si "aur/$pkg" 2>/dev/null | awk -F': ' '/^Version/ {print $2; exit}' || \
+            yay -Si "$pkg" 2>/dev/null | awk -F': ' '/^Version/ {print $2; exit}'
+    elif [[ "$helper" == "paru" ]]; then
+        paru -Si "aur/$pkg" 2>/dev/null | awk -F': ' '/^Version/ {print $2; exit}' || \
+            paru -Si "$pkg" 2>/dev/null | awk -F': ' '/^Version/ {print $2; exit}'
+    fi
+}
+
+# Check if official core/extra repos provide the package
+pkg_in_official_arch_repos() {
+    local pkg="$1"
+    pacman -Si "core/$pkg" &>/dev/null || pacman -Si "extra/$pkg" &>/dev/null || pacman -Si "multilib/$pkg" &>/dev/null
+}
+
 pkg_install() {
     local to_install_repo=()
     local to_install_aur=()
@@ -38,7 +63,43 @@ pkg_install() {
 
     for pkg in "$@"; do
         if pkg_is_installed "$pkg"; then
+            # If already installed, verify if an AUR helper can provide a newer version (e.g. AUR vs older 3rd-party repo)
+            if [[ -n "${aur_helper}" ]]; then
+                local installed_ver aur_ver
+                installed_ver="$(pacman -Q "$pkg" 2>/dev/null | awk '{print $2}')"
+                aur_ver="$(get_aur_version "$pkg" "$aur_helper" || true)"
+                if [[ -n "${installed_ver}" && -n "${aur_ver}" ]] && command -v vercmp >/dev/null 2>&1; then
+                    if [[ "$(vercmp "${aur_ver}" "${installed_ver}")" -gt 0 ]]; then
+                        log_info "Package '$pkg' has a newer version in AUR (${aur_ver} > ${installed_ver}). Queueing AUR update..."
+                        to_install_aur+=("$pkg")
+                        continue
+                    fi
+                fi
+            fi
             log_debug "Package '$pkg' already installed."
+        elif pkg_in_official_arch_repos "$pkg"; then
+            # Priority 1: Official Arch repositories (core/extra/multilib)
+            to_install_repo+=("$pkg")
+        elif [[ -n "${aur_helper}" ]]; then
+            # If in 3rd-party repos (e.g. cachyos) vs AUR, prefer AUR or newer version
+            local repo_ver aur_ver
+            repo_ver="$(get_repo_version "$pkg" || true)"
+            aur_ver="$(get_aur_version "$pkg" "$aur_helper" || true)"
+
+            if [[ -n "${aur_ver}" && -n "${repo_ver}" ]] && command -v vercmp >/dev/null 2>&1; then
+                if [[ "$(vercmp "${aur_ver}" "${repo_ver}")" -gt 0 ]]; then
+                    log_info "Preferring AUR for '$pkg' (${aur_ver}) over repo version (${repo_ver})."
+                    to_install_aur+=("$pkg")
+                else
+                    to_install_repo+=("$pkg")
+                fi
+            elif [[ -n "${aur_ver}" ]]; then
+                to_install_aur+=("$pkg")
+            elif pkg_in_repos "$pkg"; then
+                to_install_repo+=("$pkg")
+            else
+                to_install_aur+=("$pkg")
+            fi
         elif pkg_in_repos "$pkg"; then
             to_install_repo+=("$pkg")
         else
