@@ -1,6 +1,6 @@
 # CHANGELOG.MD
 
-## MangoWC-Dots -- Current version v0.0.2
+## MangoWC-Dots -- Current version v0.0.3
 
 - A simple installer to install mangowc compositor on different distros
 - Using the noctalia shell by default
@@ -15,6 +15,15 @@
 - Initial commit 9/9/2026
 
 ## Fixed / Added:
+
+- `install.sh --deps`
+  - Added `--deps` flag to add new packages if needed as project progresses
+- GPU Screen Recorder (`gpu-screen-recorder`)
+  - Added `gpu-screen-recorder` installation across all distros.
+  - Arch installs it from the official repositories; Fedora from the Terra repository.
+  - Ubuntu and Debian install it via Flatpak (the official recommended method for non-Arch distros), since it is not packaged in their repositories.
+  - Added runtime checks that install Flatpak if missing and register the Flathub remote if not already configured, then install `com.dec05eba.gpu_screen_recorder` system-wide.
+  - Note: the Flatpak build bundles a patched, statically-linked FFmpeg (equivalent to the source build's `-Dffmpeg_static=true`), which also supports older NVIDIA GPUs.
 
 - Noctalia Update Utility (`--update-noctalia`)
   - Added `--update-noctalia` command line flag to `install.sh`

@@ -266,6 +266,38 @@ install_noctalia_greeter_pkg() {
     log_ok "noctalia-greeter installed successfully."
 }
 
+install_gpu_screen_recorder() {
+    log_info "Setting up gpu-screen-recorder (Flatpak)..."
+
+    # Ensure Flatpak is installed
+    if command -v flatpak >/dev/null 2>&1; then
+        log_ok "Flatpak already installed."
+    else
+        log_info "Installing Flatpak..."
+        pkg_install flatpak
+    fi
+
+    # Ensure the Flathub remote is configured
+    if flatpak remotes --system 2>/dev/null | grep -q '^flathub'; then
+        log_ok "Flathub remote already configured."
+    else
+        log_info "Adding the Flathub remote..."
+        sudo flatpak remote-add --if-not-exists --system flathub https://flathub.org/repo/flathub.flatpakrepo 2>&1 | tee -a "${LOG_FILE}"
+    fi
+
+    # Note: the Flatpak bundles a patched, statically-linked FFmpeg (equivalent to
+    # the source build's -Dffmpeg_static=true), so it also works on older NVIDIA GPUs.
+    if flatpak info com.dec05eba.gpu_screen_recorder &>/dev/null; then
+        log_ok "gpu-screen-recorder Flatpak already installed."
+        return 0
+    fi
+
+    # Install system-wide so AMD/Intel monitor capture works
+    log_info "Installing gpu-screen-recorder Flatpak application..."
+    sudo flatpak install -y --system flathub com.dec05eba.gpu_screen_recorder 2>&1 | tee -a "${LOG_FILE}"
+    log_ok "gpu-screen-recorder installed via Flatpak."
+}
+
 install_core_packages() {
     log_info "Installing core packages for Ubuntu 26.04..."
 
@@ -318,6 +350,7 @@ install_core_packages() {
     pkg_install "${core_pkgs[@]}"
     install_mango
     install_noctalia_shell
+    install_gpu_screen_recorder
 
     # Verify Noctalia desktop shell
     if command -v noctalia >/dev/null 2>&1; then

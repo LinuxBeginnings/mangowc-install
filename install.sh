@@ -29,12 +29,14 @@ Options:
   --skip-greeter          Skip greeter configuration entirely
   --no-wallpapers         Skip wallpaper download prompt
   --update-noctalia       Check for Noctalia and Noctalia Greeter updates and prompt to upgrade
+  --deps                  Install missing dependencies/packages only (e.g. flatpak, gpu-screen-recorder) without redeploying configs
   -h, --help              Show this help message and exit
 
 Examples:
   ./install.sh                      # Standard interactive install
   ./install.sh --debug              # Run with debug logging enabled
   ./install.sh --install-greeter    # Install core desktop and configure greetd
+  ./install.sh --deps               # Install any missing packages (flatpak, gpu-screen-recorder) only
 EOF
 }
 
@@ -59,6 +61,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --update-noctalia)
             ACTION="update-noctalia"
+            ;;
+        --deps)
+            ACTION="deps"
             ;;
         -h|--help)
             print_usage
@@ -204,6 +209,12 @@ main() {
 
     if declare -f install_core_packages >/dev/null 2>&1; then
         install_core_packages
+    fi
+
+    if [[ "${ACTION}" == "deps" ]]; then
+        echo ""
+        log_ok "Dependency installation complete."
+        exit 0
     fi
 
     # Deploy configs and backups
