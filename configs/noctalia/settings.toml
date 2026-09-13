@@ -43,7 +43,7 @@ path = "/usr/local/share/noctalia/assets/noctalia-wallpaper.png"
 
 [wallpaper.last]
 path = "/usr/local/share/noctalia/assets/noctalia-wallpaper.png"
-[bar.main]
+[bar.default]
 position = "top"
 thickness = 34
 background_opacity = 0.90
