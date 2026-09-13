@@ -16,6 +16,20 @@
 
 ## Fixed / Added:
 
+- Debian Testing (Forky/Sid) Native Wlroots 0.20 & Noctalia Greeter Support (`distros/debian/packages.sh`, `distros/debian/setup.sh`)
+  - Integrated Debian testing's native `libwlroots-0.20-dev` (v0.20.2) and `libscenefx-0.5-dev` (v0.5.0) packages directly into `build_deps` and `greeter_deps`
+  - Enables native compilation of MangoWC v0.17.0 and `noctalia-greeter` without manual source builds of wlroots or scenefx
+  - Cleaned up ButterRepo source lists automatically on Forky to avoid ABI conflicts with testing's Wayland 1.26 / Qt 6.10 stack
+
+- Universal Uninstallation Option (`install.sh`, `lib/common.sh`, `distros/*/packages.sh`, `README.md`)
+  - Added `-u, --uninstall` flag across all supported distributions (Arch, Debian, Fedora, Ubuntu)
+  - Reverts login manager setup by running `remove_noctalia_greeter` and restoring previous display manager (SDDM/GDM/LightDM)
+  - Automatically uninstalls distro packages (`mangowm`, `noctalia`, `noctalia-greeter`, Flatpak `gpu-screen-recorder`) and source binaries/wrappers
+  - Removes deployed dotfiles (`~/.config/mangowc`, `~/.config/mango`, `~/.config/noctalia`) and restores previous user backups (e.g. `kitty-mangowc-*`, `fastfetch-mangowc-*`, `yazi-mangowc-*`)
+
+- Version Synchronization (`install.sh`, `lib/common.sh`, `configs/mangowc/autostart.sh`, `configs/mangowc/env.conf`)
+  - Synchronized `MANGO_DOTS_VERSION="0.0.4"` across installer scripts, shared libraries, environment configuration, and session autostart
+
 - Rustup & Cargo Toolchain Setup Check (`lib/common.sh`, `distros/*/packages.sh`)
   - Added `check_rustup_cargo` to verify whether `rustup default stable` has been run when rustup is present, automatically configuring the default stable toolchain to finish Cargo installation across all distributions
 

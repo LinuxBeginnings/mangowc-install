@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-export MANGO_DOTS_VERSION="0.0.2"
+export MANGO_DOTS_VERSION="0.0.4"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export SCRIPT_DIR
@@ -24,6 +24,7 @@ Usage: ./install.sh [OPTIONS]
 
 Options:
   -d, --debug             Enable verbose debug output and detailed logging
+  -u, --uninstall         Uninstall MangoWC, Noctalia, and restore previous configuration
   --install-greeter       Install and configure noctalia-greeter with greetd
   --remove-greeter        Remove / restore previous greeter configuration
   --skip-greeter          Skip greeter configuration entirely
@@ -35,6 +36,7 @@ Options:
 Examples:
   ./install.sh                      # Standard interactive install
   ./install.sh --debug              # Run with debug logging enabled
+  ./install.sh --uninstall          # Complete uninstallation and cleanup
   ./install.sh --install-greeter    # Install core desktop and configure greetd
   ./install.sh --deps               # Install any missing packages (flatpak, gpu-screen-recorder) only
 EOF
@@ -46,6 +48,9 @@ while [[ $# -gt 0 ]]; do
         -d|--debug)
             DEBUG=1
             export DEBUG
+            ;;
+        -u|--uninstall)
+            ACTION="uninstall"
             ;;
         --install-greeter)
             GREETER_ACTION="install"
@@ -171,6 +176,43 @@ deploy_dotfiles() {
     log_ok "Linked ${mango_legacy} -> mangowc"
 }
 
+remove_dotfiles() {
+    log_info "Removing deployed configurations from ~/.config/..."
+    local config_home="${XDG_CONFIG_HOME:-${HOME}/.config}"
+
+    # Remove mangowc and legacy mango symlink
+    if [[ -L "${config_home}/mango" ]]; then
+        rm -f "${config_home}/mango"
+        log_ok "Removed ${config_home}/mango symlink."
+    elif [[ -d "${config_home}/mango" ]]; then
+        rm -rf "${config_home}/mango"
+        log_ok "Removed ${config_home}/mango directory."
+    fi
+
+    if [[ -d "${config_home}/mangowc" ]]; then
+        rm -rf "${config_home}/mangowc"
+        log_ok "Removed ${config_home}/mangowc."
+    fi
+
+    restore_latest_backup "${config_home}/mangowc" "mangowc-backup" || true
+    restore_latest_backup "${config_home}/mango" "mango-legacy-backup" || true
+
+    # Remove or restore application configs deployed by MangoWC
+    local app_configs=("noctalia" "kitty" "ghostty" "btop" "fastfetch" "yazi")
+    for app in "${app_configs[@]}"; do
+        if restore_latest_backup "${config_home}/${app}" "${app}-mangowc"; then
+            :
+        else
+            if [[ -d "${config_home}/${app}" ]]; then
+                if [[ "${app}" == "noctalia" ]]; then
+                    rm -rf "${config_home}/noctalia"
+                    log_ok "Removed ${config_home}/noctalia."
+                fi
+            fi
+        fi
+    done
+}
+
 main() {
     print_banner
     preflight_checks
@@ -196,6 +238,38 @@ main() {
     if [[ -f "${distro_dir}/packages.sh" ]]; then
         # shellcheck source=/dev/null
         source "${distro_dir}/packages.sh"
+    fi
+
+    if [[ "${ACTION}" == "uninstall" ]]; then
+        echo ""
+        echo -e "${WARN} You are about to uninstall MangoWC and Noctalia from ${DETECTED_OS_NAME}."
+        echo -e "${WARN} This will remove the compositor, shell, greeter configuration, and deployed dotfiles."
+        echo -n "${CAT} Are you sure you want to proceed? (y/N): "
+        read -r confirm
+        case "${confirm}" in
+            [Yy]*)
+                log_info "Proceeding with uninstallation..."
+                ;;
+            *)
+                log_info "Uninstallation aborted."
+                exit 0
+                ;;
+        esac
+
+        # 1. Restore/remove greeter setup if present
+        remove_noctalia_greeter
+
+        # 2. Run distro-specific package/binary uninstallation
+        if declare -f uninstall_packages >/dev/null 2>&1; then
+            uninstall_packages
+        fi
+
+        # 3. Clean up deployed dotfiles and restore prior backups
+        remove_dotfiles
+
+        echo ""
+        log_ok "MangoWC and Noctalia uninstallation complete."
+        exit 0
     fi
 
     if [[ "${ACTION}" == "update-noctalia" ]]; then

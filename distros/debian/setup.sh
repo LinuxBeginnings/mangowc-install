@@ -54,6 +54,7 @@ configure_debian_repos() {
         if [[ -f "${butter_list}" ]]; then
             log_warn "Disabling Debian Trixie ButterRepo on Debian ${codename:-newer} to prevent ABI conflicts..."
             sudo rm -f "${butter_list}"
+            sudo apt-get update -y 2>&1 | tee -a "${LOG_FILE}"
         fi
         log_info "Debian ${codename:-Forky/Sid} detected. Using standard repositories and building MangoWC from source."
     fi

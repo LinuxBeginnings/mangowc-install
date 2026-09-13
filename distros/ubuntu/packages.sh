@@ -410,3 +410,37 @@ install_greeter_packages() {
     pkg_install greetd
     install_noctalia_greeter_pkg
 }
+
+uninstall_packages() {
+    log_info "Uninstalling MangoWC and Noctalia for Ubuntu..."
+
+    if pkg_is_installed "mangowc" || pkg_is_installed "mangowm"; then
+        log_info "Removing mangowc package..."
+        sudo apt-get purge -y mangowc mangowm 2>&1 | tee -a "${LOG_FILE}" || true
+    fi
+
+    log_info "Removing binaries and session wrappers..."
+    sudo rm -f /usr/local/bin/mango /usr/local/bin/mangowc /usr/local/bin/mango-session /usr/local/bin/mmsg
+    sudo rm -f /usr/bin/mango /usr/bin/mangowc /usr/bin/mango-session /usr/bin/mmsg
+    sudo rm -f /usr/share/wayland-sessions/mango.desktop
+
+    sudo rm -f /usr/local/bin/noctalia /usr/bin/noctalia
+    sudo rm -rf /usr/local/share/noctalia /usr/share/noctalia
+
+    sudo rm -f /usr/local/bin/noctalia-greeter /usr/bin/noctalia-greeter
+    sudo rm -f /usr/local/bin/noctalia-greeter-session /usr/bin/noctalia-greeter-session
+    sudo rm -f /usr/local/bin/noctalia-greeter-apply-appearance /usr/local/bin/noctalia-greeter-compositor
+    sudo rm -rf /usr/local/share/noctalia-greeter /var/lib/noctalia-greeter
+
+    sudo rm -f /usr/local/lib/*wlroots-0.20* /usr/local/lib/x86_64-linux-gnu/*wlroots-0.20* 2>/dev/null || true
+    sudo rm -f /usr/local/lib/*scenefx* /usr/local/lib/x86_64-linux-gnu/*scenefx* 2>/dev/null || true
+    sudo rm -rf /usr/local/include/wlroots-0.20 /usr/local/include/scenefx 2>/dev/null || true
+    sudo ldconfig
+
+    if command -v flatpak >/dev/null 2>&1 && flatpak info com.dec05eba.gpu_screen_recorder &>/dev/null; then
+        log_info "Removing gpu-screen-recorder Flatpak..."
+        sudo flatpak uninstall -y com.dec05eba.gpu_screen_recorder 2>&1 | tee -a "${LOG_FILE}" || true
+    fi
+
+    log_ok "Ubuntu components uninstalled."
+}

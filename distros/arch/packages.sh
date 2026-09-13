@@ -164,3 +164,33 @@ install_greeter_packages() {
     )
     pkg_install "${greeter_pkgs[@]}"
 }
+
+uninstall_packages() {
+    log_info "Uninstalling MangoWC packages for Arch Linux..."
+
+    local pkgs_to_remove=()
+    for pkg in mangowm mangowc noctalia noctalia-greeter; do
+        if pkg_is_installed "${pkg}"; then
+            pkgs_to_remove+=("${pkg}")
+        fi
+    done
+
+    if [[ ${#pkgs_to_remove[@]} -gt 0 ]]; then
+        log_info "Removing packages: ${pkgs_to_remove[*]}"
+        local aur_helper
+        aur_helper="$(get_aur_helper)"
+        if [[ -n "${aur_helper}" ]]; then
+            "${aur_helper}" -Rns --noconfirm "${pkgs_to_remove[@]}" 2>&1 | tee -a "${LOG_FILE}" || \
+                sudo pacman -Rns --noconfirm "${pkgs_to_remove[@]}" 2>&1 | tee -a "${LOG_FILE}" || true
+        else
+            sudo pacman -Rns --noconfirm "${pkgs_to_remove[@]}" 2>&1 | tee -a "${LOG_FILE}" || true
+        fi
+        log_ok "Removed Arch packages: ${pkgs_to_remove[*]}."
+    else
+        log_ok "No Arch compositor or shell packages currently installed."
+    fi
+
+    sudo rm -f /usr/local/bin/mango /usr/local/bin/mangowc /usr/local/bin/mango-session /usr/local/bin/mmsg 2>/dev/null || true
+    sudo rm -f /usr/bin/mango /usr/bin/mangowc /usr/bin/mango-session /usr/bin/mmsg 2>/dev/null || true
+    sudo rm -f /usr/share/wayland-sessions/mango.desktop 2>/dev/null || true
+}

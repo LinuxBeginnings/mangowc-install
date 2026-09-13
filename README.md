@@ -67,6 +67,7 @@ The installer supports several non-interactive and debugging flags:
 | Flag | Description |
 | --- | --- |
 | `-d`, `--debug` | Enable verbose shell tracing (`set -x`) and detailed debug logs |
+| `-u`, `--uninstall` | Completely uninstall MangoWC, Noctalia, and restore previous configuration |
 | `--install-greeter` | Non-interactively configure `greetd` with `noctalia-greeter` |
 | `--remove-greeter` | Restore previous display manager / `greetd` configuration |
 | `--skip-greeter` | Skip login manager / greeter configuration |

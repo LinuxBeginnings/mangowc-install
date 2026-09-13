@@ -129,6 +129,7 @@ install_mango() {
         liblcms2-dev libseat-dev libliftoff-dev libdisplay-info-dev hwdata libudev-dev
         glslang-tools libvulkan-dev
         libpango1.0-dev
+        libwlroots-0.20-dev libscenefx-0.5-dev
     )
     pkg_install "${build_deps[@]}"
 
@@ -136,8 +137,8 @@ install_mango() {
     mkdir -p "${tmp_dir}"
     export PKG_CONFIG_PATH="/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 
-    # Build and install wlroots 0.20 if missing (mango >= 0.17 requires it)
-    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
+    # Build and install wlroots 0.20 from source if not provided by system packages
+    if ! pkg-config --exists wlroots-0.20 && [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
         log_info "Building wlroots 0.20.2 from source..."
         git clone --depth=1 --branch 0.20.2 https://gitlab.freedesktop.org/wlroots/wlroots.git "${tmp_dir}/wlroots" 2>&1 | tee -a "${LOG_FILE}"
         cd "${tmp_dir}/wlroots"
@@ -152,8 +153,8 @@ install_mango() {
         cd - >/dev/null
     fi
 
-    # Build and install scenefx 0.5 if missing
-    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libscenefx-0.5.so && ! -f /usr/local/lib/libscenefx-0.5.so ]]; then
+    # Build and install scenefx 0.5 from source if not provided by system packages
+    if ! pkg-config --exists scenefx-0.5 && [[ ! -f /usr/local/lib/x86_64-linux-gnu/libscenefx-0.5.so && ! -f /usr/local/lib/libscenefx-0.5.so ]]; then
         log_info "Building scenefx 0.5 from source..."
         git clone --depth=1 --branch 0.5 https://github.com/wlrfx/scenefx.git "${tmp_dir}/scenefx" 2>&1 | tee -a "${LOG_FILE}"
         meson setup "${tmp_dir}/scenefx/build" "${tmp_dir}/scenefx" --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
@@ -237,7 +238,7 @@ install_noctalia_shell() {
         nlohmann-json3-dev libstb-dev
         libjemalloc-dev
     )
-    sudo apt-get install -y "${shell_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
+    pkg_install "${shell_deps[@]}"
 
     # Ensure wayland-protocols provides ext-background-effect-v1.xml (added in wayland-protocols >= 1.45, required by Noctalia v5)
     local wayland_protos_dir
@@ -310,14 +311,15 @@ install_noctalia_greeter_pkg() {
         libwebp-dev librsvg2-dev libxml2-dev
         libinput-dev libdrm-dev libgbm-dev libseat-dev
         libdisplay-info-dev libliftoff-dev libpixman-1-dev hwdata libudev-dev
+        libwlroots-0.20-dev
     )
-    sudo apt-get install -y "${greeter_deps[@]}" 2>&1 | tee -a "${LOG_FILE}"
+    pkg_install "${greeter_deps[@]}"
 
     local tmp_dir="/tmp/noctalia-greeter-$$"
     mkdir -p "${tmp_dir}"
 
-    # Build and install wlroots 0.20 if missing
-    if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
+    # Build and install wlroots 0.20 dependency only if not provided by system packages
+    if ! pkg-config --exists wlroots-0.20 && [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
         log_info "Building wlroots 0.20 dependency for noctalia-greeter..."
         git clone --depth=1 --branch 0.20.2 https://gitlab.freedesktop.org/wlroots/wlroots.git "${tmp_dir}/wlroots" 2>&1 | tee -a "${LOG_FILE}"
         cd "${tmp_dir}/wlroots"
@@ -485,4 +487,38 @@ install_greeter_packages() {
     log_info "Checking / installing greetd and noctalia-greeter packages..."
     pkg_install greetd
     install_noctalia_greeter_pkg
+}
+
+uninstall_packages() {
+    log_info "Uninstalling MangoWC and Noctalia for Debian..."
+
+    if pkg_is_installed "mangowc" || pkg_is_installed "mangowm"; then
+        log_info "Removing mangowc APT package..."
+        sudo apt-get purge -y mangowc mangowm 2>&1 | tee -a "${LOG_FILE}" || true
+    fi
+
+    log_info "Removing binaries and session wrappers..."
+    sudo rm -f /usr/local/bin/mango /usr/local/bin/mangowc /usr/local/bin/mango-session /usr/local/bin/mmsg
+    sudo rm -f /usr/bin/mango /usr/bin/mangowc /usr/bin/mango-session /usr/bin/mmsg
+    sudo rm -f /usr/share/wayland-sessions/mango.desktop
+
+    sudo rm -f /usr/local/bin/noctalia /usr/bin/noctalia
+    sudo rm -rf /usr/local/share/noctalia /usr/share/noctalia
+
+    sudo rm -f /usr/local/bin/noctalia-greeter /usr/bin/noctalia-greeter
+    sudo rm -f /usr/local/bin/noctalia-greeter-session /usr/bin/noctalia-greeter-session
+    sudo rm -f /usr/local/bin/noctalia-greeter-apply-appearance /usr/local/bin/noctalia-greeter-compositor
+    sudo rm -rf /usr/local/share/noctalia-greeter /var/lib/noctalia-greeter
+
+    sudo rm -f /usr/local/lib/*wlroots-0.20* /usr/local/lib/x86_64-linux-gnu/*wlroots-0.20* 2>/dev/null || true
+    sudo rm -f /usr/local/lib/*scenefx* /usr/local/lib/x86_64-linux-gnu/*scenefx* 2>/dev/null || true
+    sudo rm -rf /usr/local/include/wlroots-0.20 /usr/local/include/scenefx 2>/dev/null || true
+    sudo ldconfig
+
+    if command -v flatpak >/dev/null 2>&1 && flatpak info com.dec05eba.gpu_screen_recorder &>/dev/null; then
+        log_info "Removing gpu-screen-recorder Flatpak..."
+        sudo flatpak uninstall -y com.dec05eba.gpu_screen_recorder 2>&1 | tee -a "${LOG_FILE}" || true
+    fi
+
+    log_ok "Debian components uninstalled."
 }

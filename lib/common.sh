@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-export MANGO_DOTS_VERSION="0.0.2"
+export MANGO_DOTS_VERSION="0.0.4"
 
 # Output formatting & colors
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then
@@ -126,6 +126,26 @@ backup_path() {
     else
         log_debug "No existing path at '${target}' to backup."
     fi
+}
+
+# Restore latest backup if found
+# Usage: restore_latest_backup "/path/to/target" "backup-suffix-pattern"
+restore_latest_backup() {
+    local target="$1"
+    local pattern="$2"
+    local parent_dir
+    parent_dir="$(dirname "${target}")"
+
+    local latest_bak
+    latest_bak="$(find "${parent_dir}" -maxdepth 1 -name "${pattern}-*" 2>/dev/null | sort -V | tail -n 1 || true)"
+    if [[ -n "${latest_bak}" && -e "${latest_bak}" ]]; then
+        log_info "Restoring backup: ${latest_bak} -> ${target}..."
+        rm -rf "${target}"
+        mv "${latest_bak}" "${target}"
+        log_ok "Restored ${target} from ${latest_bak}."
+        return 0
+    fi
+    return 1
 }
 
 # Check and configure default rustup toolchain to ensure cargo works

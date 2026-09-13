@@ -7,7 +7,7 @@
 set +e
 
 # Project version
-export MANGO_DOTS_VERSION="0.0.2"
+export MANGO_DOTS_VERSION="0.0.4"
 
 # Import environment for systemd user session & D-Bus
 if command -v systemctl >/dev/null 2>&1; then

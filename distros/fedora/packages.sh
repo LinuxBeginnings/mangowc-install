@@ -118,3 +118,26 @@ install_greeter_packages() {
     )
     pkg_install "${greeter_pkgs[@]}"
 }
+
+uninstall_packages() {
+    log_info "Uninstalling MangoWC packages for Fedora..."
+
+    local pkgs_to_remove=()
+    for pkg in mangowm mangowc noctalia noctalia-greeter; do
+        if pkg_is_installed "${pkg}"; then
+            pkgs_to_remove+=("${pkg}")
+        fi
+    done
+
+    if [[ ${#pkgs_to_remove[@]} -gt 0 ]]; then
+        log_info "Removing packages: ${pkgs_to_remove[*]}"
+        sudo dnf remove -y "${pkgs_to_remove[@]}" 2>&1 | tee -a "${LOG_FILE}" || true
+        log_ok "Removed Fedora packages: ${pkgs_to_remove[*]}."
+    else
+        log_ok "No Fedora compositor or shell packages currently installed."
+    fi
+
+    sudo rm -f /usr/local/bin/mango /usr/local/bin/mangowc /usr/local/bin/mango-session /usr/local/bin/mmsg 2>/dev/null || true
+    sudo rm -f /usr/bin/mango /usr/bin/mangowc /usr/bin/mango-session /usr/bin/mmsg 2>/dev/null || true
+    sudo rm -f /usr/share/wayland-sessions/mango.desktop 2>/dev/null || true
+}
