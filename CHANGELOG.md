@@ -16,6 +16,11 @@
 
 ## Fixed / Added:
 
+- Default Layout Changed to Dwindle
+  - Switched `MANGO_DEFAULT_LAYOUT` from `scroller` to `dwindle` in `configs/mangowc/env.conf`
+  - Updated all nine `tagrule` layout entries in `configs/mangowc/tag.conf` to use `dwindle`
+  - Updated `install.sh` fallback default layout from `scroller` to `dwindle`
+
 - `install.sh --deps`
   - Added `--deps` flag to add new packages if needed as project progresses
 - GPU Screen Recorder (`gpu-screen-recorder`)
