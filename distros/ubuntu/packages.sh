@@ -123,7 +123,7 @@ install_mango() {
     cd - >/dev/null
 
     # Create session wrapper and desktop entries
-    sudo mkdir -p /usr/share/wayland-sessions
+    sudo mkdir -p /usr/share/wayland-sessions /usr/local/share/wayland-sessions
     sudo tee /usr/share/wayland-sessions/mango.desktop >/dev/null <<'DESKTOP_EOF'
 [Desktop Entry]
 Encoding=UTF-8
@@ -134,9 +134,11 @@ Exec=mango-session
 Icon=mango
 Type=Application
 DESKTOP_EOF
+    sudo cp -f /usr/share/wayland-sessions/mango.desktop /usr/local/share/wayland-sessions/mango.desktop
 
     sudo tee /usr/local/bin/mango-session >/dev/null <<'SESSION_EOF'
 #!/bin/sh
+export WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}"
 ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mango/env"
 if [ -r "$ENV_FILE" ]; then
     if sh -n "$ENV_FILE" 2>/dev/null; then
@@ -268,6 +270,7 @@ install_noctalia_greeter_pkg() {
     ninja -C build 2>&1 | tee -a "${LOG_FILE}"
     sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
     sudo cp -a scripts/noctalia-greeter-session /usr/local/bin/
+    sudo sed -i 's/export GREETER_BIN/export GREETER_BIN\nexport WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}"/' /usr/local/bin/noctalia-greeter-session
     sudo chmod +x /usr/local/bin/noctalia-greeter-session
     sudo ln -sfn /usr/local/bin/noctalia-greeter-session /usr/bin/noctalia-greeter-session
     sudo ln -sfn /usr/local/bin/noctalia-greeter /usr/bin/noctalia-greeter

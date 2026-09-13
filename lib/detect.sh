@@ -144,12 +144,26 @@ setup_vm_environment() {
     fi
 
     # Fix upside-down mouse pointer in Wayland VMs
+    # Clean up invalid 'export' syntax if present in /etc/environment
+    if grep -q "^export WLR_NO_HARDWARE_CURSORS=" /etc/environment 2>/dev/null; then
+        sudo sed -i 's/^export WLR_NO_HARDWARE_CURSORS=/WLR_NO_HARDWARE_CURSORS=/' /etc/environment
+    fi
     if ! grep -q "^WLR_NO_HARDWARE_CURSORS=" /etc/environment 2>/dev/null; then
         log_info "Configuring WLR_NO_HARDWARE_CURSORS=1 in /etc/environment (fixes upside-down pointer)..."
         echo "WLR_NO_HARDWARE_CURSORS=1" | sudo tee -a /etc/environment >/dev/null
         log_ok "Added WLR_NO_HARDWARE_CURSORS=1 to /etc/environment."
     else
         log_ok "WLR_NO_HARDWARE_CURSORS=1 already set in /etc/environment."
+    fi
+
+    # Check if Bluetooth hardware is absent on VM; mask bluetooth.service to avoid 25s D-Bus timeout
+    if ! [[ -d /sys/class/bluetooth ]] && command -v systemctl >/dev/null 2>&1; then
+        if systemctl list-unit-files bluetooth.service 2>/dev/null | grep -q bluetooth.service; then
+            if ! systemctl is-enabled bluetooth.service 2>/dev/null | grep -q "masked"; then
+                log_info "No Bluetooth hardware detected in VM. Masking bluetooth.service to prevent D-Bus timeouts..."
+                sudo systemctl mask bluetooth.service 2>&1 | tee -a "${LOG_FILE}" || true
+            fi
+        fi
     fi
 
     export WLR_NO_HARDWARE_CURSORS=1

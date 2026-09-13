@@ -16,6 +16,17 @@
 
 ## Fixed / Added:
 
+- Wayland VM Hardware Cursor & Upside-Down Pointer Fix (`configs/mangowc/env.conf`, `configs/mangowc/autostart.sh`, `lib/detect.sh`, `lib/greeter.sh`, `distros/*/packages.sh`)
+  - Fixed inverted cursor on QEMU / KVM VirtIO GPU by enforcing `WLR_NO_HARDWARE_CURSORS=1` across compositor environment (`env.conf`), user session autostart, and desktop session scripts
+  - Sanitized `/etc/environment` formatting in `lib/detect.sh` to remove invalid `export` statements that prevented `pam_env` and `systemd-environment-d-generator` from loading variables
+  - Configured systemd service drop-in override (`/etc/systemd/system/greetd.service.d/override.conf`) in `lib/greeter.sh` so `greetd` and `noctalia-greeter` inherit `WLR_NO_HARDWARE_CURSORS=1`
+  - Added `pam_env.so` and `pam_gnome_keyring.so` to `/etc/pam.d/greetd` and `/etc/pam.d/greetd-greeter` to load system environment variables and auto-unlock the user keyring on login
+  - Updated `distros/debian/packages.sh` and `distros/ubuntu/packages.sh` to mirror `mango.desktop` to `/usr/local/share/wayland-sessions/` pointing to `mango-session` to ensure session environment wrappers are not bypassed
+
+- Noctalia Shell Virtual Machine D-Bus Timeout & Keybinding Fix (`lib/detect.sh`, `configs/mangowc/bind.conf`)
+  - Added automated detection in `lib/detect.sh` to mask `bluetooth.service` when running inside virtual machines without physical Bluetooth hardware (`/sys/class/bluetooth`), preventing a 25-second blocking `org.bluez` D-Bus timeout that froze Noctalia Shell startup
+  - Corrected keybinding typo in `configs/mangowc/bind.conf` (`bind=SUPER+SHIFT,M,quit` instead of invalid `SUPER+SHFT,rqm,quit`) to resolve configuration syntax check errors (`mango -p`)
+
 - Debian Testing (Forky/Sid) Native Wlroots 0.20 & Noctalia Greeter Support (`distros/debian/packages.sh`, `distros/debian/setup.sh`)
   - Integrated Debian testing's native `libwlroots-0.20-dev` (v0.20.2) and `libscenefx-0.5-dev` (v0.5.0) packages directly into `build_deps` and `greeter_deps`
   - Enables native compilation of MangoWC v0.17.0 and `noctalia-greeter` without manual source builds of wlroots or scenefx

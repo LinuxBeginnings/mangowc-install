@@ -11,10 +11,10 @@ export MANGO_DOTS_VERSION="0.0.4"
 
 # Import environment for systemd user session & D-Bus
 if command -v systemctl >/dev/null 2>&1; then
-    systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE MANGO_DOTS_VERSION MANGO_INSTANCE_SIGNATURE
+    systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE MANGO_DOTS_VERSION MANGO_INSTANCE_SIGNATURE WLR_NO_HARDWARE_CURSORS
 fi
 if command -v dbus-update-activation-environment >/dev/null 2>&1; then
-    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE MANGO_DOTS_VERSION MANGO_INSTANCE_SIGNATURE
+    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE MANGO_DOTS_VERSION MANGO_INSTANCE_SIGNATURE WLR_NO_HARDWARE_CURSORS
 fi
 
 # Stop competing Hyprland background daemons that fail under Mango

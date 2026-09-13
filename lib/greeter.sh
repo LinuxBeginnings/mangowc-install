@@ -132,6 +132,39 @@ EOF
 
     log_ok "/etc/greetd/config.toml updated successfully."
 
+    # Configure greetd service environment override and PAM
+    sudo mkdir -p /etc/systemd/system/greetd.service.d
+    sudo tee /etc/systemd/system/greetd.service.d/override.conf >/dev/null <<EOF
+[Service]
+EnvironmentFile=-/etc/environment
+Environment="WLR_NO_HARDWARE_CURSORS=1"
+EOF
+
+    if [[ -f /etc/pam.d/greetd ]]; then
+        sudo tee /etc/pam.d/greetd >/dev/null <<'EOF'
+#%PAM-1.0
+-auth       optional    pam_gnome_keyring.so
+@include common-auth
+-account    optional    pam_gnome_keyring.so
+@include common-account
+session     required    pam_env.so readenv=1
+session     required    pam_env.so readenv=1 envfile=/etc/default/locale
+@include common-session
+-session    optional    pam_gnome_keyring.so auto_start
+EOF
+    fi
+
+    if [[ -f /etc/pam.d/greetd-greeter ]]; then
+        sudo tee /etc/pam.d/greetd-greeter >/dev/null <<'EOF'
+#%PAM-1.0
+session     required    pam_env.so readenv=1
+session     required    pam_env.so readenv=1 envfile=/etc/default/locale
+@include common-auth
+@include common-account
+@include common-session
+EOF
+    fi
+
     # Disable competing display managers (lightdm, sddm, gdm, lxdm)
     # Note: Do NOT use --now here, as stopping the active display manager immediately
     # kills the current session and terminates the running install script.
