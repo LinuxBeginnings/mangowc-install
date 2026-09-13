@@ -15,13 +15,14 @@ detect_distro() {
         exit 1
     fi
 
-    local os_id="" os_like="" os_version="" os_name=""
+    local os_id="" os_like="" os_version="" os_name="" os_codename=""
     os_id="$(grep -E '^ID=' /etc/os-release | cut -d= -f2 | tr -d '"')"
     os_like="$(grep -E '^ID_LIKE=' /etc/os-release | cut -d= -f2 | tr -d '"' || true)"
     os_version="$(grep -E '^VERSION_ID=' /etc/os-release | cut -d= -f2 | tr -d '"' || true)"
     os_name="$(grep -E '^PRETTY_NAME=' /etc/os-release | cut -d= -f2 | tr -d '"' || true)"
+    os_codename="$(grep -E '^(VERSION_CODENAME|DEBIAN_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"' | head -n1 || true)"
 
-    log_debug "Raw os-release: ID=${os_id}, ID_LIKE=${os_like}, VERSION_ID=${os_version}"
+    log_debug "Raw os-release: ID=${os_id}, ID_LIKE=${os_like}, VERSION_ID=${os_version}, CODENAME=${os_codename}"
 
     local matched_distro=""
 
@@ -89,15 +90,29 @@ detect_distro() {
         fi
     fi
 
+    # Resolve Debian release codename if unset (e.g. forky / sid / testing)
+    if [[ "${matched_distro}" == "debian" && -z "${os_codename}" ]]; then
+        local deb_ver=""
+        [[ -f /etc/debian_version ]] && deb_ver="$(cat /etc/debian_version || true)"
+        if [[ "${deb_ver}" =~ ^13(\..*)?$ || "${os_version}" == "13" || "${os_name}" =~ [Tt]rixie ]]; then
+            os_codename="trixie"
+        elif [[ "${deb_ver}" =~ ^14(\..*)?$ || "${os_version}" == "14" || "${os_name}" =~ [Ff]orky ]]; then
+            os_codename="forky"
+        elif [[ "${deb_ver}" =~ sid|unstable || "${os_name}" =~ [Ss]id|[Uu]nstable ]]; then
+            os_codename="sid"
+        fi
+    fi
+
     export DETECTED_DISTRO="${matched_distro}"
     export DETECTED_OS_NAME="${os_name:-${os_id}}"
     export DETECTED_VERSION_ID="${os_version}"
+    export DETECTED_CODENAME="${os_codename}"
 
     if [[ "${matched_distro}" == "unsupported" ]]; then
         log_warn "Distribution '${os_name}' (ID: ${os_id}) is not directly supported."
-        log_warn "Supported distros currently include: Fedora, Arch, Ubuntu (>= 26.04)."
+        log_warn "Supported distros currently include: Debian, Fedora, Arch, Ubuntu (>= 26.04)."
     else
-        log_ok "Detected supported distribution: ${DETECTED_OS_NAME} (${DETECTED_DISTRO})"
+        log_ok "Detected supported distribution: ${DETECTED_OS_NAME} (${DETECTED_DISTRO} ${DETECTED_CODENAME:-${DETECTED_VERSION_ID}})"
     fi
 }
 

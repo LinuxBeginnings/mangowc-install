@@ -61,6 +61,36 @@ pkg_install() {
     fi
 }
 
+install_xfce_polkit() {
+    if command -v xfce-polkit >/dev/null 2>&1 || [[ -x /usr/local/libexec/xfce-polkit || -x /usr/libexec/xfce-polkit ]]; then
+        log_ok "xfce-polkit authentication agent already installed."
+        return 0
+    fi
+
+    log_info "Installing xfce-polkit authentication agent from source..."
+    local polkit_build_deps=(
+        meson ninja-build pkg-config gcc
+        libxfce4ui-2-dev libpolkit-agent-1-dev libglib2.0-dev
+    )
+    pkg_install "${polkit_build_deps[@]}"
+
+    local tmp_dir="/tmp/xfce-polkit-install-$$"
+    mkdir -p "${tmp_dir}"
+    git clone --depth=1 https://github.com/ncopa/xfce-polkit.git "${tmp_dir}/xfce-polkit" 2>&1 | tee -a "${LOG_FILE}"
+    cd "${tmp_dir}/xfce-polkit"
+    meson setup build --prefix=/usr/local --libexecdir=libexec 2>&1 | tee -a "${LOG_FILE}"
+    ninja -C build 2>&1 | tee -a "${LOG_FILE}"
+    sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
+    cd - >/dev/null
+
+    sudo mkdir -p /usr/libexec
+    sudo ln -sfn /usr/local/libexec/xfce-polkit /usr/libexec/xfce-polkit
+    sudo ln -sfn /usr/local/libexec/xfce-polkit /usr/local/bin/xfce-polkit
+    sudo ln -sfn /usr/local/libexec/xfce-polkit /usr/bin/xfce-polkit 2>/dev/null || true
+    rm -rf "${tmp_dir}"
+    log_ok "xfce-polkit installed successfully."
+}
+
 install_mango() {
     local force="${1:-0}"
     if [[ "${force}" -ne 1 ]] && (command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1); then
@@ -68,7 +98,27 @@ install_mango() {
         return 0
     fi
 
-    log_info "Installing Mango compositor from source..."
+    local codename="${DETECTED_CODENAME:-}"
+    if [[ -z "${codename}" ]]; then
+        codename="$(grep -E '^(VERSION_CODENAME|DEBIAN_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"' | head -n1 || echo "")"
+    fi
+
+    # Debian Trixie (13): Install prebuilt mangowc package (v0.14.4 built against wlroots 0.19 & scenefx 0.4)
+    if [[ "${codename}" == "trixie" || "${DETECTED_VERSION_ID:-}" == "13" ]]; then
+        log_info "Debian Trixie detected: Installing precompiled mangowc (v0.14.4 compatible with Trixie Wayland stack) via APT..."
+        pkg_install mangowc
+        sudo mkdir -p /usr/local/bin
+        sudo ln -sfn /usr/bin/mango /usr/local/bin/mango 2>/dev/null || true
+        sudo ln -sfn /usr/bin/mango /usr/local/bin/mangowc 2>/dev/null || true
+        sudo ln -sfn /usr/bin/mango /usr/bin/mangowc 2>/dev/null || true
+        sudo ln -sfn /usr/bin/mango-session /usr/local/bin/mango-session 2>/dev/null || true
+        sudo ldconfig
+        log_ok "Mango compositor installed successfully via APT."
+        return 0
+    fi
+
+    # Debian Forky (14) / Sid (unstable): Compile Mango v0.17 from source
+    log_info "Debian Forky/Sid detected: Compiling Mango compositor v0.17.0 from source..."
     local build_deps=(
         meson ninja-build pkg-config git gcc g++
         libwayland-dev wayland-protocols
@@ -217,7 +267,18 @@ install_noctalia_greeter_pkg() {
         return 0
     fi
 
-    log_info "Installing noctalia-greeter for Debian..."
+    local codename="${DETECTED_CODENAME:-}"
+    if [[ -z "${codename}" ]]; then
+        codename="$(grep -E '^(VERSION_CODENAME|DEBIAN_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"' | head -n1 || echo "")"
+    fi
+
+    if [[ "${codename}" == "trixie" || "${DETECTED_VERSION_ID:-}" == "13" ]]; then
+        log_warn "noctalia-greeter requires wlroots-0.20 which is incompatible with Debian Trixie's native Wayland stack."
+        log_warn "Skipping noctalia-greeter compilation on Debian Trixie. greetd can be configured with an alternative greeter session."
+        return 0
+    fi
+
+    log_info "Installing noctalia-greeter for Debian Forky/Sid..."
     local greeter_deps=(
         meson ninja-build pkg-config g++ just dbus
         libwayland-dev wayland-protocols
@@ -336,7 +397,10 @@ install_core_packages() {
         # Polkit Authentication Agent
         xfce-polkit
 
-        # Quickshell & Qt6/QML Runtime Dependencies
+        # Quickshell Desktop Shell Toolkit
+        quickshell
+
+        # Qt6/QML Runtime Dependencies
         qml6-module-qtquick-templates
         qml6-module-qt5compat-graphicaleffects
         qt6-wayland
@@ -348,6 +412,7 @@ install_core_packages() {
     )
 
     pkg_install "${core_pkgs[@]}"
+    install_xfce_polkit
     install_mango
     install_noctalia_shell
     install_gpu_screen_recorder

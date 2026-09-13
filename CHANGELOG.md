@@ -16,6 +16,19 @@
 
 ## Fixed / Added:
 
+- Debian Trixie (13) & Forky/Sid Differential Support (`distros/debian/`, `lib/detect.sh`)
+  - Added Debian codename detection (`trixie`, `forky`, `sid`) via `VERSION_CODENAME`, `DEBIAN_CODENAME`, `/etc/debian_version`, and release names in `lib/detect.sh`, exporting `DETECTED_CODENAME`
+  - Debian 13 (Trixie):
+    - Configured ButterRepo (`https://apt.justaguy.dev`) and GPG signing key (`/usr/share/keyrings/butterrepo.gpg`) to install precompiled `mangowc` (v0.14.4 built against wlroots 0.19 and scenefx 0.4) via APT
+    - Enabled `trixie-backports` repository to supply dependencies like `uwsm`
+    - Skipped `noctalia-greeter` compilation with warning due to wlroots 0.20 incompatibility with Trixie's native Wayland stack
+  - Debian 14 (Forky) / Sid:
+    - Removed ButterRepo if present to prevent ABI conflicts with newer Wayland stacks
+    - Compiles `mangowc` v0.17.0 and `noctalia-greeter` from source
+  - Added `xfce-polkit` source compilation fallback (`install_xfce_polkit`) when not found in path or libexec, with symlinks in `/usr/libexec/`, `/usr/local/bin/`, and `/usr/bin/`
+  - Added `quickshell` desktop shell toolkit package to Debian core packages list
+  - Added Debian to the supported distros list in unsupported distro detection warnings
+
 - Noctalia Duplicate Bar Fix
   - Renamed `[bar.main]` to `[bar.default]` in `configs/noctalia/settings.toml` to prevent Noctalia from spawning a second bar alongside its default/state bar on existing installations.
 
