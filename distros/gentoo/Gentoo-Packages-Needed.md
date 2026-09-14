@@ -1,12 +1,15 @@
 # Gentoo Packages Needed for MangoWC + Noctalia
 
-This document provides the complete list of package names (with Portage categories) and configuration required to run the MangoWC and Noctalia desktop environment on Gentoo Linux. If the automated installation script fails or if you prefer to install packages manually, follow the instructions below.
+> **IMPORTANT WARNING**: This installer was built and tested against the maintainer's personal Gentoo system configuration with testing keywords globally enabled (`~amd64`). Because Gentoo setups differ widely based on chosen system profile (desktop, systemd, openrc), USE flags, package masks, and keywords, **you will likely have to resolve package dependency conflicts before or during installation**.
 
 ---
 
-## 1. Repositories & Overlays
+## 1. Expected Repositories & Overlays
 
-Several core components (`gui-apps/noctalia`, `gui-apps/quickshell`, `gui-apps/noctalia-greeter`, `app-misc/yazi`, `gui-apps/wl-mirror`, `gui-apps/wlr-randr`, `media-video/gpu-screen-recorder`, `x11-themes/bibata-xcursors`) are hosted in the **GURU** overlay.
+This project requires two Portage repositories:
+
+1. **`::gentoo`** (Official Gentoo Repository) - Provides base tools, XWayland, Wayland protocols, Qt6 runtime packages, Kitty, Fastfetch, etc.
+2. **`::guru`** (Gentoo User Repository) - Required for `gui-apps/noctalia`, `gui-apps/quickshell`, `gui-apps/noctalia-greeter`, `gui-libs/scenefx:0.5`, `app-misc/yazi`, `gui-apps/wl-mirror`, `gui-apps/wlr-randr`, `media-video/gpu-screen-recorder`, and `x11-themes/bibata-xcursors`.
 
 Enable the GURU repository using `eselect-repository`:
 
@@ -16,6 +19,22 @@ sudo emaint sync -r guru
 ```
 
 *(If `eselect-repository` is not installed, run `sudo emerge app-eselect/eselect-repository` first.)*
+
+---
+
+## 2. Minimum Component Versions & Prerequisites
+
+| Component | Minimum Version | Notes |
+| --- | --- | --- |
+| `gui-libs/wlroots` | `>= 0.20.2` (slot `:0.20`) | Required by Mango v0.17.0 and Noctalia Greeter |
+| `gui-libs/scenefx` | `>= 0.5.0` (slot `:0.5`) | Required by Mango v0.17.0 (from GURU overlay) |
+| `gui-wm/mangowc` | `v0.17.0` | Compiled from source by installer (GURU package is v0.16.x) |
+| `gui-apps/noctalia` | `>= 5.0.0` | Desktop shell v5 (from GURU overlay) |
+| `gui-apps/quickshell` | Git master | Shell toolkit (from GURU overlay) |
+| `dev-libs/wayland-protocols` | `>= 1.45` | Required for `ext-background-effect` protocol |
+| `media-video/ffmpeg` | `USE="vulkan"` | Required for `gpu-screen-recorder` hardware capture |
+| `dev-build/meson` | `>= 0.60.0` | Required for building Mango and Noctalia |
+| `ACCEPT_KEYWORDS` | `~amd64` / `~arch` | Required for all packages residing in GURU |
 
 ---
 

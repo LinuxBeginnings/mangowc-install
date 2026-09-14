@@ -235,6 +235,13 @@ main() {
         source "${distro_dir}/packages.sh"
     fi
 
+    # Gentoo compatibility notice and confirmation check
+    if [[ "${DETECTED_DISTRO}" == "gentoo" && "${ACTION}" != "uninstall" && "${ACTION}" != "update-noctalia" ]]; then
+        if declare -f gentoo_compatibility_warning >/dev/null 2>&1; then
+            gentoo_compatibility_warning
+        fi
+    fi
+
     # Check for Virtual Machine and apply cursor & guest optimizations
     if is_virtual_machine; then
         setup_vm_environment

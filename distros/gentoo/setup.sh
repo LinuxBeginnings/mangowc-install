@@ -7,6 +7,75 @@
 
 set -euo pipefail
 
+gentoo_compatibility_warning() {
+    if [[ "${GENTOO_WARNED:-0}" -eq 1 ]]; then
+        return 0
+    fi
+
+    local bold red yellow green cyan magenta white reset
+    if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then
+        bold="$(tput bold 2>/dev/null || echo "")"
+        red="$(tput setaf 1 2>/dev/null || echo "")"
+        yellow="$(tput setaf 3 2>/dev/null || echo "")"
+        green="$(tput setaf 2 2>/dev/null || echo "")"
+        cyan="$(tput setaf 6 2>/dev/null || echo "")"
+        magenta="$(tput setaf 5 2>/dev/null || echo "")"
+        white="$(tput setaf 7 2>/dev/null || echo "")"
+        reset="$(tput sgr0 2>/dev/null || echo "")"
+    else
+        bold="" red="" yellow="" green="" cyan="" magenta="" white="" reset=""
+    fi
+
+    echo ""
+    echo -e "${red}${bold}╔══════════════════════════════════════════════════════════════════════════════════════════════════╗${reset}"
+    echo -e "${red}${bold}║  🚨  ⚠️   ATTENTION: GENTOO LINUX INSTALLATION NOTICE & DEPENDENCY WARNING   ⚠️   🚨           ║${reset}"
+    echo -e "${red}${bold}╚══════════════════════════════════════════════════════════════════════════════════════════════════╝${reset}"
+    echo -e "${yellow}${bold}  [!] EXPERIMENTAL CONFIGURATION NOTICE:${reset}"
+    echo -e "      ${bold}This installer is tested with my personal Gentoo configuration.${reset}"
+    echo -e "      Because Gentoo installations vary greatly (custom profiles, USE flags, masks, keywords),"
+    echo -e "      ${red}${bold}you will likely have to resolve package dependency issues before installing.${reset}"
+    echo ""
+    echo -e "${cyan}${bold}  📦 EXPECTED REPOSITORIES (OVERLAYS) REQUIRED:${reset}"
+    echo -e "      • ${bold}::gentoo${reset}  (Official Gentoo repository)"
+    echo -e "      • ${bold}::guru${reset}    (Gentoo User Repository - required for Noctalia, Quickshell,"
+    echo -e "                  Scenefx, Bibata cursors, Yazi, wl-mirror, and wlr-randr)"
+    echo ""
+    echo -e "${magenta}${bold}  ⚙️  MINIMUM COMPONENT VERSIONS & PREREQUISITES:${reset}"
+    echo -e "      • ${bold}gui-libs/wlroots:0.20${reset}     >= 0.20.2 (wlroots 0.20 API required)"
+    echo -e "      • ${bold}gui-libs/scenefx:0.5${reset}      >= 0.5.0 (from GURU overlay)"
+    echo -e "      • ${bold}gui-wm/mangowc${reset}            v0.17.0 (compiled from source by this installer)"
+    echo -e "      • ${bold}gui-apps/noctalia${reset}         >= 5.0.0 (from GURU overlay)"
+    echo -e "      • ${bold}gui-apps/quickshell${reset}       Git master (from GURU overlay)"
+    echo -e "      • ${bold}dev-libs/wayland-protocols${reset} >= 1.45 (for ext-background-effect protocol)"
+    echo -e "      • ${bold}media-video/ffmpeg${reset}        Requires ${yellow}USE=\"vulkan\"${reset} for gpu-screen-recorder"
+    echo -e "      • ${bold}ACCEPT_KEYWORDS${reset}          ${yellow}~amd64${reset} required for packages residing in GURU"
+    echo ""
+    echo -e "${green}${bold}  📖 COMPLETE PACKAGE LIST & MANUAL RESOLUTION GUIDE:${reset}"
+    echo -e "      Please refer to: ${bold}${cyan}distros/gentoo/Gentoo-Packages-Needed.md${reset}"
+    echo -e "      for the complete list of packages, USE flags, keywords, and manual build steps"
+    echo -e "      should this automated script fail on your specific Gentoo setup."
+    echo ""
+    echo -e "${red}${bold}════════════════════════════════════════════════════════════════════════════════════════════════════${reset}"
+    echo ""
+    echo -e "${yellow}${bold}  ⚠️  CONFIRMATION REQUIRED:${reset}"
+    echo -e "      Do you want to proceed with installation on Gentoo?"
+    echo -n "      Type ${bold}Yes${reset} (case-sensitive) to continue [default: No]: "
+    read -r gentoo_confirm
+
+    if [[ "${gentoo_confirm}" != "Yes" ]]; then
+        echo ""
+        log_warn "Installation cancelled. You must enter exact 'Yes' (case-sensitive) to proceed on Gentoo."
+        log_info "Default answer is No. Exiting without modifying your system."
+        log_info "Please consult ${SCRIPT_DIR}/distros/gentoo/Gentoo-Packages-Needed.md for manual steps."
+        exit 0
+    fi
+
+    GENTOO_WARNED=1
+    export GENTOO_WARNED
+    echo ""
+    log_ok "Confirmation accepted ('Yes'). Continuing Gentoo setup..."
+}
+
 configure_gentoo_repos() {
     log_info "Configuring Gentoo repositories & overlays..."
 
@@ -106,5 +175,6 @@ EOF
 }
 
 distro_setup() {
+    gentoo_compatibility_warning
     configure_gentoo_repos
 }

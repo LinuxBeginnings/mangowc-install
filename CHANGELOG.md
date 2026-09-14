@@ -20,6 +20,7 @@
 - Gentoo Linux Distribution Support (`distros/gentoo/`, `lib/detect.sh`, `README.md`)
   - Added Gentoo Linux detection in `lib/detect.sh` and VM `qemu-guest-agent` setup
   - Created `distros/gentoo/setup.sh` to configure repositories and overlays:
+    - Added high-visibility colored warning banner with warning icons when Gentoo is detected, requiring exact "Yes" (case-sensitive) confirmation before proceeding, with default answer "No"
     - Automatically checks for and enables the `guru` overlay via `eselect repository` or direct repos.conf definition
     - Detects if global testing keywords (`~amd64` / `~arch`) are enabled; if not, automatically configures `/etc/portage/package.accept_keywords/mangowc` for required GURU and bleeding-edge packages
     - Configures `/etc/portage/package.use/mangowc` to enable `media-video/ffmpeg vulkan` for hardware-accelerated screen recording
