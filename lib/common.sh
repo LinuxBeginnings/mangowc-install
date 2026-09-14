@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-export MANGO_DOTS_VERSION="0.0.4"
+export MANGO_DOTS_VERSION="0.1.1"
 
 # Output formatting & colors
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then

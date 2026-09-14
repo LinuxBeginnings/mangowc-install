@@ -45,7 +45,7 @@ Unlike bloated scripts that install dozens of non-essential applications, this i
 - **Safe Automatic Backups:** Automatically backs up modified directories prior to installation with timestamps (e.g. `~/.config/fastfetch` ➔ `~/.config/fastfetch-mangowc-<timestamp>`).
 - **Noctalia Greeter & greetd:** Optional interactive or command-line installation and rollback management for `noctalia-greeter` on `greetd`.
 - **Wallpaper-Bank Download Prompt:** Features the LinuxBeginnings interactive prompt for downloading wallpapers, complete with AI-generated content disclosures and download size warnings.
-- **Modular Multi-Distro Engine:** Shared libraries under `lib/` (`common.sh`, `detect.sh`, `greeter.sh`, `wallpapers.sh`) with distro-isolated packages and setups under `distros/<distro>/`.
+- **Modular Multi-Distro Engine:** Shared libraries under `lib/` (`common.sh`, `detect.sh`, `greeter.sh`, `wallpapers.sh`) with distro-isolated packages and setups under `distros/<distro>/` (Gentoo, Arch, Fedora, Debian, Ubuntu).
 - **Debugging & Logging:** Detailed logging to `Install-Logs/install-<timestamp>.log` with an optional `--debug` flag for verbose execution.
 
 ---
@@ -94,6 +94,7 @@ mangowc/
 │   │   ├── packages.sh         # Lean package lists (mangowm, noctalia, kitty, etc.)
 │   │   └── setup.sh            # DNF parallel downloads, COPR & Terra/RPM Fusion repos
 │   ├── arch/                   # Arch Linux packages (yay/paru AUR support)
+│   ├── gentoo/                 # Gentoo Linux (emerge binary/source + GURU + source mango 0.17.0)
 │   ├── ubuntu/                 # Ubuntu 26.04+ (ButterRepo + APT packages)
 │   └── debian/                 # Modular stub for Debian
 └── configs/

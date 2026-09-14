@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-export MANGO_DOTS_VERSION="0.0.4"
+export MANGO_DOTS_VERSION="0.1.1"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export SCRIPT_DIR
@@ -281,6 +281,26 @@ main() {
         distro_setup
     fi
 
+    # Presence checks before attempting to install
+    log_info "Verifying presence of core components before installation..."
+    if command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1; then
+        local installed_mango
+        installed_mango="$(command -v mango 2>/dev/null || command -v mangowc)"
+        log_ok "Mango compositor already present at ${installed_mango}."
+    else
+        log_info "Mango compositor not found. It will be installed."
+    fi
+
+    if command -v noctalia >/dev/null 2>&1; then
+        log_ok "Noctalia desktop shell already present at $(command -v noctalia)."
+    else
+        log_info "Noctalia desktop shell not found. It will be installed."
+    fi
+
+    if command -v quickshell >/dev/null 2>&1 || command -v qs >/dev/null 2>&1; then
+        log_ok "Quickshell toolkit already present ($(command -v quickshell 2>/dev/null || command -v qs))."
+    fi
+
     if declare -f install_core_packages >/dev/null 2>&1; then
         install_core_packages
     fi
@@ -297,8 +317,12 @@ main() {
     # Greeter setup
     case "${GREETER_ACTION}" in
         install)
-            if declare -f install_greeter_packages >/dev/null 2>&1; then
-                install_greeter_packages
+            if ! is_noctalia_greeter_installed || ! command -v greetd >/dev/null 2>&1; then
+                if declare -f install_greeter_packages >/dev/null 2>&1; then
+                    install_greeter_packages
+                fi
+            else
+                log_ok "greetd and noctalia-greeter are already installed."
             fi
             install_noctalia_greeter
             ;;

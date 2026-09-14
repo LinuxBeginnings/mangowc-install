@@ -7,7 +7,7 @@
 set +e
 
 # Project version
-export MANGO_DOTS_VERSION="0.1.0"
+export MANGO_DOTS_VERSION="0.1.1"
 
 # Configure software cursors only for NVIDIA or Virtual Machine environments
 is_vm_or_nvidia() {

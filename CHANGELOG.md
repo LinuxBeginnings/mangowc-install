@@ -1,10 +1,11 @@
 # CHANGELOG.MD
 
-## MangoWC-Dots -- Current version v0.1.0
+## MangoWC-Dots -- Current version v0.1.1
 
 - A simple installer to install mangowc compositor on different distros
 - Using the noctalia shell by default
 - Distros:
+  - Gentoo Linux
   - Fedora 44+
   - Arch
   - Debian
@@ -15,6 +16,31 @@
 - Initial commit 9/9/2026
 
 ## Fixed / Added:
+
+- Gentoo Linux Distribution Support (`distros/gentoo/`, `lib/detect.sh`, `README.md`)
+  - Added Gentoo Linux detection in `lib/detect.sh` and VM `qemu-guest-agent` setup
+  - Created `distros/gentoo/setup.sh` to configure repositories and overlays:
+    - Automatically checks for and enables the `guru` overlay via `eselect repository` or direct repos.conf definition
+    - Detects if global testing keywords (`~amd64` / `~arch`) are enabled; if not, automatically configures `/etc/portage/package.accept_keywords/mangowc` for required GURU and bleeding-edge packages
+    - Configures `/etc/portage/package.use/mangowc` to enable `media-video/ffmpeg vulkan` for hardware-accelerated screen recording
+  - Created `distros/gentoo/packages.sh`:
+    - Fast package presence checking (`pkg_is_installed`) using `qlist`, `equery`, and `/var/db/pkg`
+    - Implemented `pkg_install` attempting binary packages first (`emerge --getbinpkg=y --binpkg-respect-use=y`) and falling back seamlessly to compiling from source
+    - Compiles Mango compositor v0.17.0 from source (`https://github.com/mangowm/mango.git`) against Gentoo's `wlroots-0.20` and `scenefx-0.5`
+    - Compiles `xfce-polkit` authentication agent from source with symlinks in `/usr/libexec` and `/usr/bin`
+    - Portage-first installation of `gpu-screen-recorder` with automated Flatpak fallback
+    - Installs and verifies `greetd` and `noctalia-greeter` with automated `noctalia-greeter-session` wrapper generation
+    - Clean uninstallation routine (`uninstall_packages`) supporting `emerge --depclean` and binary cleanup
+  - Created `distros/gentoo/Gentoo-Packages-Needed.md`:
+    - Comprehensive guide detailing all Gentoo package categories and names
+    - Manual Portage installation instructions, testing keyword settings, and source build instructions for Mango v0.17.0
+
+- Pre-Installation Presence Verification (`install.sh`)
+  - Added verification checks before attempting package installation to inspect if `mango`, `mangowc`, `noctalia`, or `quickshell` are already present on the system
+  - Added presence verification check before calling `install_greeter_packages` to skip package re-installation if `greetd` and `noctalia-greeter` already exist
+
+- Version Bump to 0.1.1 (`install.sh`, `lib/common.sh`, `configs/mangowc/autostart.sh`, `configs/mangowc/env.conf`, `CHANGELOG.md`)
+  - Synchronized `MANGO_DOTS_VERSION="0.1.1"` across all scripts, libraries, autostart, and environment files
 
 - `WLR_NO_HARDWARE_CURSORS` was allways set
   - Now just for VMs and NVIDIA

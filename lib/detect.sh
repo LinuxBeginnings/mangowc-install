@@ -16,11 +16,11 @@ detect_distro() {
     fi
 
     local os_id="" os_like="" os_version="" os_name="" os_codename=""
-    os_id="$(grep -E '^ID=' /etc/os-release | cut -d= -f2 | tr -d '"')"
-    os_like="$(grep -E '^ID_LIKE=' /etc/os-release | cut -d= -f2 | tr -d '"' || true)"
-    os_version="$(grep -E '^VERSION_ID=' /etc/os-release | cut -d= -f2 | tr -d '"' || true)"
-    os_name="$(grep -E '^PRETTY_NAME=' /etc/os-release | cut -d= -f2 | tr -d '"' || true)"
-    os_codename="$(grep -E '^(VERSION_CODENAME|DEBIAN_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"' | head -n1 || true)"
+    os_id="$(grep -E '^ID=' /etc/os-release | cut -d= -f2 | tr -d '"'\''')"
+    os_like="$(grep -E '^ID_LIKE=' /etc/os-release | cut -d= -f2 | tr -d '"'\''' || true)"
+    os_version="$(grep -E '^VERSION_ID=' /etc/os-release | cut -d= -f2 | tr -d '"'\''' || true)"
+    os_name="$(grep -E '^PRETTY_NAME=' /etc/os-release | cut -d= -f2 | tr -d '"'\''' || true)"
+    os_codename="$(grep -E '^(VERSION_CODENAME|DEBIAN_CODENAME)=' /etc/os-release | cut -d= -f2 | tr -d '"'\''' | head -n1 || true)"
 
     log_debug "Raw os-release: ID=${os_id}, ID_LIKE=${os_like}, VERSION_ID=${os_version}, CODENAME=${os_codename}"
 
@@ -39,6 +39,9 @@ detect_distro() {
         ubuntu|pop|linuxmint)
             matched_distro="ubuntu"
             ;;
+        gentoo)
+            matched_distro="gentoo"
+            ;;
         opensuse*|suse)
             matched_distro="opensuse"
             ;;
@@ -49,6 +52,8 @@ detect_distro() {
                 matched_distro="arch"
             elif [[ "${os_like}" =~ ubuntu ]]; then
                 matched_distro="ubuntu"
+            elif [[ "${os_like}" =~ gentoo ]]; then
+                matched_distro="gentoo"
             elif [[ "${os_like}" =~ debian ]]; then
                 matched_distro="debian"
             else
@@ -110,7 +115,7 @@ detect_distro() {
 
     if [[ "${matched_distro}" == "unsupported" ]]; then
         log_warn "Distribution '${os_name}' (ID: ${os_id}) is not directly supported."
-        log_warn "Supported distros currently include: Debian, Fedora, Arch, Ubuntu (>= 26.04)."
+        log_warn "Supported distros currently include: Gentoo, Debian, Fedora, Arch, Ubuntu (>= 26.04)."
     else
         log_ok "Detected supported distribution: ${DETECTED_OS_NAME} (${DETECTED_DISTRO} ${DETECTED_CODENAME:-${DETECTED_VERSION_ID}})"
     fi
@@ -161,6 +166,9 @@ setup_vm_environment() {
                 ;;
             arch)
                 sudo pacman -S --needed --noconfirm "${qemu_pkg}" 2>&1 | tee -a "${LOG_FILE}" || true
+                ;;
+            gentoo)
+                sudo emerge --getbinpkg=y --binpkg-respect-use=y "app-emulation/${qemu_pkg}" 2>&1 | tee -a "${LOG_FILE}" || true
                 ;;
         esac
     fi
