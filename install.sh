@@ -369,6 +369,8 @@ main() {
 
     log_info "To start Mango, log out and select Mango from your display manager, or run 'mango' from TTY."
     echo ""
+    exit 0
 }
 
 main "$@"
+exit 0
