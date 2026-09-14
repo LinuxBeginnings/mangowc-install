@@ -134,10 +134,14 @@ EOF
 
     # Configure greetd service environment override and PAM
     sudo mkdir -p /etc/systemd/system/greetd.service.d
+    local hw_cursor_env=""
+    if declare -f needs_software_cursors >/dev/null 2>&1 && needs_software_cursors; then
+        hw_cursor_env="Environment=\"WLR_NO_HARDWARE_CURSORS=1\""
+    fi
     sudo tee /etc/systemd/system/greetd.service.d/override.conf >/dev/null <<EOF
 [Service]
 EnvironmentFile=-/etc/environment
-Environment="WLR_NO_HARDWARE_CURSORS=1"
+${hw_cursor_env}
 EOF
 
     if [[ -f /etc/pam.d/greetd ]]; then

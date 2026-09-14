@@ -138,7 +138,12 @@ DESKTOP_EOF
 
     sudo tee /usr/local/bin/mango-session >/dev/null <<'SESSION_EOF'
 #!/bin/sh
-export WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}"
+if [ -z "${WLR_NO_HARDWARE_CURSORS:-}" ]; then
+    if (command -v systemd-detect-virt >/dev/null 2>&1 && [ "$(systemd-detect-virt 2>/dev/null)" != "none" ]) || \
+       (lspci 2>/dev/null | grep -qi 'nvidia') || (grep -qi 'nvidia' /proc/modules 2>/dev/null); then
+        export WLR_NO_HARDWARE_CURSORS=1
+    fi
+fi
 ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mango/env"
 if [ -r "$ENV_FILE" ]; then
     if sh -n "$ENV_FILE" 2>/dev/null; then
@@ -270,7 +275,7 @@ install_noctalia_greeter_pkg() {
     ninja -C build 2>&1 | tee -a "${LOG_FILE}"
     sudo ninja -C build install 2>&1 | tee -a "${LOG_FILE}"
     sudo cp -a scripts/noctalia-greeter-session /usr/local/bin/
-    sudo sed -i 's/export GREETER_BIN/export GREETER_BIN\nexport WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}"/' /usr/local/bin/noctalia-greeter-session
+    sudo sed -i 's/export GREETER_BIN/export GREETER_BIN\nif [ -z "$WLR_NO_HARDWARE_CURSORS" ]; then if (command -v systemd-detect-virt >\/dev\/null 2>\&1 \&\& [ "$(systemd-detect-virt 2>\/dev\/null)" != "none" ]) || (lspci 2>\/dev\/null | grep -qi "nvidia") || (grep -qi "nvidia" \/proc\/modules 2>\/dev\/null); then export WLR_NO_HARDWARE_CURSORS=1; fi; fi/' /usr/local/bin/noctalia-greeter-session
     sudo chmod +x /usr/local/bin/noctalia-greeter-session
     sudo ln -sfn /usr/local/bin/noctalia-greeter-session /usr/bin/noctalia-greeter-session
     sudo ln -sfn /usr/local/bin/noctalia-greeter /usr/bin/noctalia-greeter

@@ -16,6 +16,9 @@
 
 ## Fixed / Added:
 
+- `WLR_NO_HARDWARE_CURSORS` was allways set
+  - Now just for VMs and NVIDIA
+- Added rule to float and center the settings panel for Noctalia
 - In VMs `qemu-guest-agent` is installed
 - Wayland VM Hardware Cursor & Upside-Down Pointer Fix (`configs/mangowc/env.conf`, `configs/mangowc/autostart.sh`, `lib/detect.sh`, `lib/greeter.sh`, `distros/*/packages.sh`)
   - Fixed inverted cursor on QEMU / KVM VirtIO GPU by enforcing `WLR_NO_HARDWARE_CURSORS=1` across compositor environment (`env.conf`), user session autostart, and desktop session scripts

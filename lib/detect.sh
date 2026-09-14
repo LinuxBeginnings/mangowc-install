@@ -130,6 +130,20 @@ is_virtual_machine() {
     return 1
 }
 
+has_nvidia_gpu() {
+    if lspci 2>/dev/null | grep -qi 'vga.*nvidia\|3d.*nvidia'; then
+        return 0
+    fi
+    if grep -qi 'nvidia' /proc/modules 2>/dev/null || lsmod 2>/dev/null | grep -qi 'nvidia'; then
+        return 0
+    fi
+    return 1
+}
+
+needs_software_cursors() {
+    is_virtual_machine || has_nvidia_gpu
+}
+
 setup_vm_environment() {
     log_info "Virtual Machine detected. Setting up VM optimizations..."
 
