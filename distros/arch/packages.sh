@@ -144,6 +144,11 @@ install_core_packages() {
         noctalia
     )
 
+    # Virtual machine guest utilities
+    if is_virtual_machine; then
+        core_pkgs+=("qemu-guest-agent")
+    fi
+
     pkg_install "${core_pkgs[@]}"
 
     if pkg_is_installed "mangowm" || pkg_is_installed "mangowc" || command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1; then

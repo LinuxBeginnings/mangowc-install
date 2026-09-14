@@ -104,6 +104,11 @@ install_core_packages() {
         noctalia
     )
 
+    # Virtual machine guest utilities
+    if is_virtual_machine; then
+        core_pkgs+=("qemu-guest-agent")
+    fi
+
     pkg_install "${core_pkgs[@]}"
 
     # Verify Rustup / Cargo toolchain

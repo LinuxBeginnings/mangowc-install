@@ -369,6 +369,11 @@ install_core_packages() {
         jq
     )
 
+    # Virtual machine guest utilities
+    if is_virtual_machine; then
+        core_pkgs+=("qemu-guest-agent")
+    fi
+
     pkg_install "${core_pkgs[@]}"
     install_mango
     install_noctalia_shell

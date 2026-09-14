@@ -1,6 +1,6 @@
 # CHANGELOG.MD
 
-## MangoWC-Dots -- Current version v0.0.4
+## MangoWC-Dots -- Current version v0.1.0
 
 - A simple installer to install mangowc compositor on different distros
 - Using the noctalia shell by default
@@ -16,6 +16,7 @@
 
 ## Fixed / Added:
 
+- In VMs `qemu-guest-agent` is installed
 - Wayland VM Hardware Cursor & Upside-Down Pointer Fix (`configs/mangowc/env.conf`, `configs/mangowc/autostart.sh`, `lib/detect.sh`, `lib/greeter.sh`, `distros/*/packages.sh`)
   - Fixed inverted cursor on QEMU / KVM VirtIO GPU by enforcing `WLR_NO_HARDWARE_CURSORS=1` across compositor environment (`env.conf`), user session autostart, and desktop session scripts
   - Sanitized `/etc/environment` formatting in `lib/detect.sh` to remove invalid `export` statements that prevented `pam_env` and `systemd-environment-d-generator` from loading variables
@@ -75,14 +76,14 @@
 - Noctalia Duplicate Bar Fix
   - Renamed `[bar.main]` to `[bar.default]` in `configs/noctalia/settings.toml` to prevent Noctalia from spawning a second bar alongside its default/state bar on existing installations.
 
-- Volume knob bindings 
+- Volume knob bindings
 
-- Default rules: 
-  - Google Chrome on Tag 2 
-  - Discovery on Tag 3 
-  - OBS studio on Tag 9 
+- Default rules:
+  - Google Chrome on Tag 2
+  - Discovery on Tag 3
+  - OBS studio on Tag 9
 
-- Hot spot 
+- Hot spot
   - Move mouse to lower left corner to activate overview mode
 
 - Passthrough Mode Submap (`keymode`)

@@ -133,14 +133,27 @@ is_virtual_machine() {
 setup_vm_environment() {
     log_info "Virtual Machine detected. Setting up VM optimizations..."
 
-    # Install qemu-guest-agent / utils
+    # Install qemu-guest-agent across all distros
     local qemu_pkg="qemu-guest-agent"
     if declare -f pkg_install >/dev/null 2>&1; then
         pkg_install "${qemu_pkg}" || log_warn "Could not install ${qemu_pkg}."
+    else
+        case "${DETECTED_DISTRO:-}" in
+            fedora)
+                sudo dnf install -y "${qemu_pkg}" 2>&1 | tee -a "${LOG_FILE}" || true
+                ;;
+            debian|ubuntu)
+                sudo apt-get install -y "${qemu_pkg}" 2>&1 | tee -a "${LOG_FILE}" || true
+                ;;
+            arch)
+                sudo pacman -S --needed --noconfirm "${qemu_pkg}" 2>&1 | tee -a "${LOG_FILE}" || true
+                ;;
+        esac
     fi
 
     if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
         sudo systemctl enable --now qemu-guest-agent.service 2>&1 | tee -a "${LOG_FILE}" || true
+        log_ok "qemu-guest-agent service enabled and started."
     fi
 
     # Fix upside-down mouse pointer in Wayland VMs
