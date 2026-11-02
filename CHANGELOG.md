@@ -1,6 +1,6 @@
 # CHANGELOG.MD
 
-## MangoWC-Dots -- Current version v0.1.1
+## MangoWC-Dots -- Current version v0.2.0
 
 - A simple installer to install mangowc compositor on different distros
 - Using the noctalia shell by default
@@ -11,29 +11,53 @@
   - Debian
   - Ubuntu 26.04+
 
-## Nov 2026
+## v0.2.0 (Nov 2026)
 
-- Mango 0.18.4 Config Migration (`configs/mangowc/`)
-  - Converted all compositor config files from `*.conf` to TOML (`config.toml`, `env.toml`, `bind.toml`, `monitor.toml`, `tag.toml`, `rule.toml`, `noctalia.toml`) and updated every legacy option to the 0.18 snake_case names (previously rejected as `Unknown keyword`)
-  - `exec-once` → `exec_once`; `windowrule`/`tagrule`/`monitorrule` → `window_rule`/`tag_rule`/`monitor_rule` with `is_floating` and `app_id` fields; theme colors renamed to snake_case
-  - Removed duplicate wheel axis bindings and moved `nautilus` off the `SUPER+ALT+F` collision
-  - Added 0.18 options: dim, dwindle split behaviour, trackpad extras, idle-inhibit on fullscreen, auto reload
-  - `Virtual-1` monitor rule pinned to 1920x1080@60 by default
-  - `install.sh`, `reload.sh` and `toggle-outer-gaps.sh` now read/write the TOML files and remove stale `.conf` files on upgrade
-  - Source builds pin Mango v0.18.4 (Gentoo, Ubuntu, Debian Forky/Sid)
+### Config: Mango 0.18.4 TOML Migration (`configs/mangowc/`)
+
+- Converted all compositor config files from `*.conf` to TOML (`config.toml`, `env.toml`, `bind.toml`, `monitor.toml`, `tag.toml`, `rule.toml`, `noctalia.toml`) and updated every legacy option to the 0.18 snake_case names (previously rejected as `Unknown keyword`)
+- `exec-once` → `exec_once`; `windowrule`/`tagrule`/`monitorrule` → `window_rule`/`tag_rule`/`monitor_rule` with `is_floating` and `app_id` fields; theme colors renamed to snake_case
+- Removed duplicate wheel axis bindings and moved `nautilus` off the `SUPER+ALT+F` collision
+- Added 0.18 options: dim, dwindle split behaviour, trackpad extras, idle-inhibit on fullscreen, auto reload
+- `Virtual-1` monitor rule pinned to 1920x1080@60 by default
+
+### Added
+
+- `install.sh --dry-run` reports the detected distribution, which components are already present, the planned package/config deployment (including backups, stale `.conf` removal, layout sync and the `mango -> mangowc` symlink), the greeter action and the wallpaper prompt, then exits before the sudo preflight, repository setup, package installs or dotfile deployment
+
+### Fixes
+
+- Installer Crash & Prompt Hardening (`lib/greeter.sh`, `lib/wallpapers.sh`, `lib/update.sh`)
+  - Fixed fatal `RC: unbound variable` crash in `prompt_greeter_action`: the greeter status line referenced an undefined `RC` colour instead of `RESET`, which aborted `install.sh` immediately under `set -euo pipefail`
+  - `prompt_greeter_action` and `prompt_wallpapers` now tolerate closed or piped stdin (EOF) and fall back to their documented defaults (skip greeter configuration / skip wallpaper download) instead of exiting silently with status 1
+  - `--update-noctalia` now distinguishes EOF from an empty line: a closed stdin skips the upgrade instead of defaulting to `Y` and starting an unattended upgrade. Pressing `Enter` still accepts the default
+- TOML config handling (`install.sh`, `configs/mangowc/bin/`)
+  - `deploy_dotfiles` now removes stale `config/bind/env/monitor/tag/rule/noctalia.conf` files, because mango still loads `config.conf` in preference to `config.toml`
+  - `reload.sh` and `toggle-outer-gaps.sh` read and rewrite TOML (`MANGO_DEFAULT_LAYOUT`, `scroller_structs`, `gap_outer_horizontal`) instead of the old `key=value` syntax, so the layout sync and outer-gap toggle work again
+  - `toggle-outer-gaps.sh` no longer edits the removed `tag.conf`
+  - `config.toml` now declares its six includes in one `source` array; the previous six repeated `source =` keys were invalid TOML for strict parsers (Python's `tomllib` refused the file) even though mango accepted them
+- `install.sh` now ends with an explicit `exit 0` after `main` to guarantee a clean exit status
+- Removed unused `BLUE` colour variable from the palette in `lib/common.sh`
+
+### Repository Hygiene
+
+- Removed the undeployed `configs/waybar/` leftover (`config`, `style.css`); nothing in `install.sh` ever deployed it
+- Added `tests/upgrade-rehearsal.sh`, which rehearses the v0.1.x `.conf` → TOML upgrade in a throwaway `$HOME` against the real `deploy_dotfiles()` and `reload.sh` (no root, no package installs)
+
+### Mango 0.18.4 Builds
+
+- Source builds pin Mango v0.18.4 on Gentoo, Ubuntu, and Debian Forky/Sid
+- Gentoo version guards and `Gentoo-Packages-Needed.md` updated from 0.17.0 to 0.18.4
+
+### Version Bump
+
+- `MANGO_DOTS_VERSION="0.2.0"` synchronized across `install.sh`, `lib/common.sh`, `configs/mangowc/env.toml`, and `configs/mangowc/autostart.sh`
 
 ## Sept 2026
 
 - Initial commit 9/9/2026
 
 ## Fixed / Added:
-
-- Installer Crash & Prompt Hardening (`lib/greeter.sh`, `lib/wallpapers.sh`, `lib/update.sh`)
-  - Fixed fatal `RC: unbound variable` crash in `prompt_greeter_action`: the greeter status line referenced an undefined `RC` colour instead of `RESET`, which aborted `install.sh` immediately under `set -euo pipefail`
-  - `prompt_greeter_action` and `prompt_wallpapers` now tolerate closed or piped stdin (EOF) and fall back to their documented defaults (skip greeter configuration / skip wallpaper download) instead of exiting silently with status 1
-  - `--update-noctalia` now distinguishes EOF from an empty line: a closed stdin skips the upgrade instead of defaulting to `Y` and starting an unattended upgrade. Pressing `Enter` still accepts the default
-
-- Removed unused `BLUE` colour variable from the palette in `lib/common.sh`
 
 - Gentoo Linux Distribution Support (`distros/gentoo/`, `lib/detect.sh`, `README.md`)
   - Added Gentoo Linux detection in `lib/detect.sh` and VM `qemu-guest-agent` setup

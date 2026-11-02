@@ -74,6 +74,8 @@ The installer supports several non-interactive and debugging flags:
 | `--skip-greeter` | Skip login manager / greeter configuration |
 | `--no-wallpapers` | Bypass wallpaper bank download prompt |
 | `--update-noctalia` | Check for Noctalia & Greeter updates and prompt to upgrade |
+| `--deps` | Install missing packages only, without redeploying configs |
+| `--dry-run` | Report what would be installed or changed, then exit without touching the system |
 | `-h`, `--help` | Display usage options |
 
 ---
@@ -84,10 +86,13 @@ The installer supports several non-interactive and debugging flags:
 mangowc/
 ├── install.sh                  # Main orchestrator
 ├── README.md                   # Documentation
+├── tests/                      # Offline checks (no root, no system changes)
+│   └── upgrade-rehearsal.sh    # Rehearses the v0.1.x .conf -> TOML upgrade
 ├── lib/                        # Multi-distro common libraries
 │   ├── common.sh               # Colors, logging, sudo keepalive, backup helpers
 │   ├── detect.sh               # /etc/os-release parsing and VM/distro matcher
 │   ├── greeter.sh              # greetd + noctalia-greeter installation & rollback
+│   ├── update.sh               # Noctalia & greeter update check (--update-noctalia)
 │   └── wallpapers.sh           # Wallpaper-Bank cloning with AI warning
 ├── distros/                    # Distribution-specific modules
 │   ├── fedora/
@@ -106,6 +111,8 @@ mangowc/
     │   └── config
     ├── greetd/                 # Target: /etc/greetd/
     │   └── config.toml
+    ├── noctalia/               # Target: ~/.config/noctalia/
+    │   └── settings.toml       # Shell settings (single default bar)
     ├── kitty/                  # Target: ~/.config/kitty/ (Noctalia-themeable)
     │   ├── current-theme.conf
     │   └── kitty.conf
@@ -135,6 +142,10 @@ mangowc/
 - **Standard XDG Locations**: App configs (`kitty`, `ghostty`, `btop`, `yazi`, `fastfetch`) are deployed directly to `~/.config/<app>` so Noctalia Shell's theme engine can seamlessly generate and apply color schemes (e.g. `~/.config/kitty/current-theme.conf`, `~/.config/yazi/theme.toml`).
 - **Mango Compositor**: Configured under `~/.config/mangowc` with an automatic symlink `~/.config/mango -> mangowc`.
 - **Default Layout**: Controlled via `"MANGO_DEFAULT_LAYOUT" = "..."` in `~/.config/mangowc/env.toml`. Reloading via `Super + Alt + R` or `~/.config/mangowc/bin/reload.sh` synchronizes this layout across all tags in `tag.toml`.
+
+### Upgrading from v0.1.x
+
+v0.2.0 moves the compositor config to TOML for Mango 0.18.4. Re-running `./install.sh` deploys the new `*.toml` files and deletes the stale `config/bind/env/monitor/tag/rule/noctalia.conf` files, because mango loads `config.conf` in preference to `config.toml`. Your previous `~/.config/mangowc` is moved to `~/.config/mangowc-backup-<timestamp>` first, but hand edits from the old `.conf` files are **not** carried over — re-apply them in the matching `.toml` file, using the 0.18 names (`exec_once`, `window_rule`, `tag_rule`, `monitor_rule`, and snake_case colour keys such as `focus_color`).
 
 ---
 

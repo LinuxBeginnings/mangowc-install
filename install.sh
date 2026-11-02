@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-export MANGO_DOTS_VERSION="0.1.1"
+export MANGO_DOTS_VERSION="0.2.0"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export SCRIPT_DIR
@@ -16,7 +16,8 @@ export SCRIPT_DIR
 DEBUG=0
 GREETER_ACTION="prompt"   # prompt, install, remove, skip
 DOWNLOAD_WALLPAPERS=1    # 1=prompt, 0=skip
-ACTION="install"         # install, update-noctalia
+ACTION="install"         # install, update-noctalia, deps
+DRY_RUN=0                # 1=report planned changes and exit without touching the system
 
 print_usage() {
     cat <<'EOF'
@@ -31,6 +32,7 @@ Options:
   --no-wallpapers         Skip wallpaper download prompt
   --update-noctalia       Check for Noctalia and Noctalia Greeter updates and prompt to upgrade
   --deps                  Install missing dependencies/packages only (e.g. flatpak, gpu-screen-recorder) without redeploying configs
+  --dry-run               Report what would be installed or changed, then exit without touching the system
   -h, --help              Show this help message and exit
 
 Examples:
@@ -39,6 +41,7 @@ Examples:
   ./install.sh --uninstall          # Complete uninstallation and cleanup
   ./install.sh --install-greeter    # Install core desktop and configure greetd
   ./install.sh --deps               # Install any missing packages (flatpak, gpu-screen-recorder) only
+  ./install.sh --dry-run            # Show what would change, then exit without modifying anything
 EOF
 }
 
@@ -69,6 +72,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --deps)
             ACTION="deps"
+            ;;
+        --dry-run)
+            DRY_RUN=1
             ;;
         -h|--help)
             print_usage
@@ -216,9 +222,103 @@ remove_dotfiles() {
     done
 }
 
+report_dry_run_plan() {
+    local config_home="${XDG_CONFIG_HOME:-${HOME}/.config}"
+    local mangowc_dst="${config_home}/mangowc"
+    local app app_configs=(kitty ghostty btop fastfetch yazi noctalia)
+    local src_dir dst_dir def_layout
+
+    echo ""
+    log_info "Dry run: no changes will be made to this system."
+
+    case "${ACTION}" in
+        uninstall)
+            log_info "Action: uninstall mangowc + noctalia, restore the previous display manager and dotfile backups."
+            log_ok "Dry run complete; nothing was changed."
+            exit 0
+            ;;
+        update-noctalia)
+            log_info "Action: compare installed and latest Noctalia / Noctalia Greeter releases, then prompt to upgrade."
+            log_ok "Dry run complete; nothing was changed."
+            exit 0
+            ;;
+    esac
+
+    log_info "Detected: ${DETECTED_OS_NAME} (${DETECTED_DISTRO}${DETECTED_CODENAME:+, ${DETECTED_CODENAME}})"
+
+    if [[ "${ACTION}" == "deps" ]]; then
+        log_info "Action: install missing packages only; dotfiles would be left untouched."
+    else
+        log_info "Action: full install."
+    fi
+
+    log_info "Packages: would run distros/${DETECTED_DISTRO}/setup.sh and install_core_packages from distros/${DETECTED_DISTRO}/packages.sh."
+
+    local component
+    for component in mango noctalia quickshell; do
+        if command -v "${component}" >/dev/null 2>&1; then
+            log_info "Component ${component}: already present at $(command -v "${component}")."
+        else
+            log_info "Component ${component}: not installed, would be installed."
+        fi
+    done
+
+    if is_virtual_machine; then
+        log_info "Virtual machine detected: would install qemu-guest-agent and apply the VM cursor / Bluetooth tweaks."
+    fi
+
+    if [[ "${ACTION}" != "deps" ]]; then
+        log_info "Config deployment:"
+        for app in "${app_configs[@]}"; do
+            src_dir="${SCRIPT_DIR}/configs/${app}"
+            dst_dir="${config_home}/${app}"
+            [[ -d "${src_dir}" ]] || continue
+            if [[ -d "${dst_dir}" && ! -L "${dst_dir}" ]]; then
+                log_info "  ${app}: back up ${dst_dir}, then deploy"
+            else
+                log_info "  ${app}: deploy to ${dst_dir}"
+            fi
+        done
+
+        if [[ -d "${mangowc_dst}" && ! -L "${mangowc_dst}" ]]; then
+            log_info "  mangowc: back up ${mangowc_dst}, then deploy the TOML config"
+        else
+            log_info "  mangowc: deploy the TOML config to ${mangowc_dst}"
+        fi
+
+        if compgen -G "${mangowc_dst}/*.conf" >/dev/null 2>&1; then
+            log_info "  mangowc: stale *.conf files would be removed (mango prefers config.conf)"
+        fi
+
+        def_layout="$(grep -E '^"?MANGO_DEFAULT_LAYOUT"?[[:space:]]*=' "${SCRIPT_DIR}/configs/mangowc/env.toml" 2>/dev/null | cut -d'=' -f2 | tr -d ' "' || true)"
+        log_info "  layouts: all tag rules would be set to '${def_layout:-dwindle}'"
+        log_info "  symlink: ${config_home}/mango -> mangowc"
+
+        case "${GREETER_ACTION}" in
+            install) log_info "Greeter: would install and configure greetd + noctalia-greeter." ;;
+            remove)  log_info "Greeter: would remove the noctalia-greeter configuration." ;;
+            skip)    log_info "Greeter: skipped per flag." ;;
+            *)       log_info "Greeter: would prompt (install / remove / skip)." ;;
+        esac
+
+        if [[ "${DOWNLOAD_WALLPAPERS}" -eq 1 ]]; then
+            log_info "Wallpapers: would prompt to download the wallpaper bank."
+        else
+            log_info "Wallpapers: skipped per flag."
+        fi
+    fi
+
+    echo ""
+    log_ok "Dry run complete; nothing was changed."
+}
+
 main() {
     print_banner
-    preflight_checks
+    if [[ "${DRY_RUN}" == "1" ]]; then
+        log_info "Dry run: skipping sudo preflight checks."
+    else
+        preflight_checks
+    fi
     detect_distro
 
     local distro_dir="${SCRIPT_DIR}/distros/${DETECTED_DISTRO}"
@@ -236,6 +336,11 @@ main() {
     if [[ -f "${distro_dir}/packages.sh" ]]; then
         # shellcheck source=/dev/null
         source "${distro_dir}/packages.sh"
+    fi
+
+    if [[ "${DRY_RUN}" == "1" ]]; then
+        report_dry_run_plan
+        exit 0
     fi
 
     # Gentoo compatibility notice and confirmation check

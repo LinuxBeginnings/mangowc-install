@@ -169,12 +169,14 @@ border_px = 2
 # ============================================
 # Sub-config Sources
 # ============================================
-source = "./env.toml"
-source = "./bind.toml"
-source = "./monitor.toml"
-source = "./tag.toml"
-source = "./rule.toml"
-source = "./noctalia.toml"
+source = [
+    "./env.toml",
+    "./bind.toml",
+    "./monitor.toml",
+    "./tag.toml",
+    "./rule.toml",
+    "./noctalia.toml",
+]
 
 # ============================================
 # Autostart

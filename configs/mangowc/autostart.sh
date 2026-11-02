@@ -7,7 +7,7 @@
 set +e
 
 # Project version
-export MANGO_DOTS_VERSION="0.1.1"
+export MANGO_DOTS_VERSION="0.2.0"
 
 # Configure software cursors only for NVIDIA or Virtual Machine environments
 is_vm_or_nvidia() {
@@ -77,8 +77,3 @@ if command -v noctalia >/dev/null 2>&1; then
   mkdir -p "${HOME}/.local/state/noctalia"
   noctalia >"${HOME}/.local/state/noctalia/noctalia.log" 2>&1 &
 fi
-
-# Waybar kept as an optional fallback bar (commented out)
-# if command -v waybar >/dev/null 2>&1; then
-#     waybar > "${HOME}/.local/state/waybar.log" 2>&1 &
-# fi
