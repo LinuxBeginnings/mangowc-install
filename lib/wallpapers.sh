@@ -18,7 +18,8 @@ prompt_wallpapers() {
     while true; do
         echo -e "${NOTE} A number of these wallpapers are AI generated or enhanced. Select (N/n) if this is an issue for you."
         echo -ne "${CAT} Would you like to download additional wallpapers? ${WARN} This is ~1GB in size (y/n): "
-        read -r answer
+        # Tolerate closed / piped stdin: EOF is treated as 'no'.
+        read -r answer || answer=""
         answer="$(echo "${answer}" | tr '[:upper:]' '[:lower:]')"
 
         case "${answer}" in

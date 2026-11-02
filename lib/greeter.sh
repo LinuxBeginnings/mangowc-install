@@ -258,15 +258,16 @@ prompt_greeter_action() {
     echo ""
     echo -e "${INFO} Noctalia Greeter (Login Manager Setup):"
     if is_noctalia_greeter_installed; then
-        echo -e "  Current status: ${GREEN}noctalia-greeter is installed${RC}"
+        echo -e "  Current status: ${GREEN}noctalia-greeter is installed${RESET}"
     else
-        echo -e "  Current status: ${YELLOW}noctalia-greeter is NOT installed${RC}"
+        echo -e "  Current status: ${YELLOW}noctalia-greeter is NOT installed${RESET}"
     fi
     echo "  1) Install / Configure noctalia-greeter with greetd"
     echo "  2) Remove / Restore previous display manager / greetd config"
     echo "  3) Skip greeter configuration (default)"
     echo -n "${CAT} Enter your choice [1-3] (default 3): "
-    read -r choice
+    # Tolerate closed / piped stdin: EOF is treated as the default (skip).
+    read -r choice || choice=""
 
     case "${choice}" in
         1)

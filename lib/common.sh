@@ -20,7 +20,6 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then
     MAGENTA="$(tput setaf 5)"
     YELLOW="$(tput setaf 3)"
     GREEN="$(tput setaf 2)"
-    BLUE="$(tput setaf 4)"
     CYAN="$(tput setaf 6)"
     RESET="$(tput sgr0)"
 else
@@ -33,7 +32,6 @@ else
     MAGENTA=""
     YELLOW=""
     GREEN=""
-    BLUE=""
     CYAN=""
     RESET=""
 fi

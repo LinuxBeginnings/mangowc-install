@@ -17,6 +17,13 @@
 
 ## Fixed / Added:
 
+- Installer Crash & Prompt Hardening (`lib/greeter.sh`, `lib/wallpapers.sh`, `lib/update.sh`)
+  - Fixed fatal `RC: unbound variable` crash in `prompt_greeter_action`: the greeter status line referenced an undefined `RC` colour instead of `RESET`, which aborted `install.sh` immediately under `set -euo pipefail`
+  - `prompt_greeter_action` and `prompt_wallpapers` now tolerate closed or piped stdin (EOF) and fall back to their documented defaults (skip greeter configuration / skip wallpaper download) instead of exiting silently with status 1
+  - `--update-noctalia` now distinguishes EOF from an empty line: a closed stdin skips the upgrade instead of defaulting to `Y` and starting an unattended upgrade. Pressing `Enter` still accepts the default
+
+- Removed unused `BLUE` colour variable from the palette in `lib/common.sh`
+
 - Gentoo Linux Distribution Support (`distros/gentoo/`, `lib/detect.sh`, `README.md`)
   - Added Gentoo Linux detection in `lib/detect.sh` and VM `qemu-guest-agent` setup
   - Created `distros/gentoo/setup.sh` to configure repositories and overlays:

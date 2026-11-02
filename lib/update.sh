@@ -154,7 +154,13 @@ check_and_update_noctalia() {
     fi
 
     echo -ne "${CAT} ${prompt_msg}"
-    read -r reply
+    # Distinguish a real answer from EOF (closed / piped stdin). EOF must never be
+    # read as "yes", or an unattended run would silently start an upgrade.
+    local reply=""
+    local got_reply=0
+    if read -r reply; then
+        got_reply=1
+    fi
 
     if [[ "${update_noctalia_avail}" -eq 0 && "${update_greeter_avail}" -eq 0 ]]; then
         case "${reply}" in
@@ -168,7 +174,12 @@ check_and_update_noctalia() {
                 ;;
         esac
     else
-        reply="${reply:-Y}"
+        if [[ "${got_reply}" -eq 1 ]]; then
+            # An empty line keeps the documented default (Y for updates).
+            reply="${reply:-Y}"
+        else
+            log_warn "No answer received (stdin closed). Skipping upgrade."
+        fi
         case "${reply}" in
             [Yy]*)
                 log_info "Upgrading Noctalia components..."
