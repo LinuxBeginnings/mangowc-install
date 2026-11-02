@@ -94,7 +94,7 @@ mangowc/
 │   │   ├── packages.sh         # Lean package lists (mangowm, noctalia, kitty, etc.)
 │   │   └── setup.sh            # DNF parallel downloads, COPR & Terra/RPM Fusion repos
 │   ├── arch/                   # Arch Linux packages (yay/paru AUR support)
-│   ├── gentoo/                 # Gentoo Linux (emerge binary/source + GURU + source mango 0.17.0)
+│   ├── gentoo/                 # Gentoo Linux (emerge binary/source + GURU + source mango 0.18.4)
 │   ├── ubuntu/                 # Ubuntu 26.04+ (ButterRepo + APT packages)
 │   └── debian/                 # Modular stub for Debian
 └── configs/
@@ -114,13 +114,13 @@ mangowc/
     │   └── theme.toml
     └── mangowc/                # Target: ~/.config/mangowc/
         ├── autostart.sh        # Portal & Noctalia startup
-        ├── bind.conf           # Mango keybindings
-        ├── config.conf         # Mango compositor config (scroller proportions)
-        ├── env.conf            # Dynamic Wayland environment & MANGO_DEFAULT_LAYOUT
-        ├── monitor.conf        # Display rules
-        ├── noctalia.conf       # Theme colors
-        ├── rule.conf           # Window rules (floating-kitty, etc.)
-        ├── tag.conf            # Workspace tag layout
+        ├── bind.toml           # Mango keybindings
+        ├── config.toml         # Mango compositor config (scroller proportions)
+        ├── env.toml            # Dynamic Wayland environment & MANGO_DEFAULT_LAYOUT
+        ├── monitor.toml        # Display rules (Virtual-1 pinned to 1920x1080@60)
+        ├── noctalia.toml       # Theme colors
+        ├── rule.toml           # Window rules (floating-kitty, etc.)
+        ├── tag.toml            # Workspace tag layout
         └── bin/                # Helper scripts
             ├── reload.sh       # Mango & Noctalia reloader
             ├── screenshot.sh   # Grim + Slurp screenshot tool
@@ -134,7 +134,7 @@ mangowc/
 
 - **Standard XDG Locations**: App configs (`kitty`, `ghostty`, `btop`, `yazi`, `fastfetch`) are deployed directly to `~/.config/<app>` so Noctalia Shell's theme engine can seamlessly generate and apply color schemes (e.g. `~/.config/kitty/current-theme.conf`, `~/.config/yazi/theme.toml`).
 - **Mango Compositor**: Configured under `~/.config/mangowc` with an automatic symlink `~/.config/mango -> mangowc`.
-- **Default Layout**: Controlled via `env=MANGO_DEFAULT_LAYOUT,...` in `~/.config/mangowc/env.conf`. Reloading via `Super + Alt + R` or `~/.config/mangowc/bin/reload.sh` synchronizes this layout across all tags in `tag.conf`.
+- **Default Layout**: Controlled via `"MANGO_DEFAULT_LAYOUT" = "..."` in `~/.config/mangowc/env.toml`. Reloading via `Super + Alt + R` or `~/.config/mangowc/bin/reload.sh` synchronizes this layout across all tags in `tag.toml`.
 
 ---
 

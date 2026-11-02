@@ -6,8 +6,7 @@
 
 set -euo pipefail
 
-CONFIG_FILE="${HOME}/.config/mangowc/config.conf"
-TAG_FILE="${HOME}/.config/mangowc/tag.conf"
+CONFIG_FILE="${HOME}/.config/mangowc/config.toml"
 STATE_FILE="${HOME}/.config/mangowc/.recording_mode"
 
 STRUCTS=0
@@ -23,8 +22,8 @@ else
 fi
 
 if [[ -f "${CONFIG_FILE}" ]]; then
-    sed -i "s/^scroller_structs=.*/scroller_structs=${STRUCTS}/" "${CONFIG_FILE}" 2>/dev/null || true
-    sed -i "s/^gappoh=.*/gappoh=${NEW_GAPPOH}/" "${CONFIG_FILE}" 2>/dev/null || true
+    sed -i -E "s/^scroller_structs *=.*/scroller_structs = ${STRUCTS}/" "${CONFIG_FILE}" 2>/dev/null || true
+    sed -i -E "s/^gap_outer_horizontal *=.*/gap_outer_horizontal = ${NEW_GAPPOH}/" "${CONFIG_FILE}" 2>/dev/null || true
 fi
 
 if command -v mmsg >/dev/null 2>&1; then

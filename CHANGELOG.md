@@ -11,6 +11,17 @@
   - Debian
   - Ubuntu 26.04+
 
+## Nov 2026
+
+- Mango 0.18.4 Config Migration (`configs/mangowc/`)
+  - Converted all compositor config files from `*.conf` to TOML (`config.toml`, `env.toml`, `bind.toml`, `monitor.toml`, `tag.toml`, `rule.toml`, `noctalia.toml`) and updated every legacy option to the 0.18 snake_case names (previously rejected as `Unknown keyword`)
+  - `exec-once` → `exec_once`; `windowrule`/`tagrule`/`monitorrule` → `window_rule`/`tag_rule`/`monitor_rule` with `is_floating` and `app_id` fields; theme colors renamed to snake_case
+  - Removed duplicate wheel axis bindings and moved `nautilus` off the `SUPER+ALT+F` collision
+  - Added 0.18 options: dim, dwindle split behaviour, trackpad extras, idle-inhibit on fullscreen, auto reload
+  - `Virtual-1` monitor rule pinned to 1920x1080@60 by default
+  - `install.sh`, `reload.sh` and `toggle-outer-gaps.sh` now read/write the TOML files and remove stale `.conf` files on upgrade
+  - Source builds pin Mango v0.18.4 (Gentoo, Ubuntu, Debian Forky/Sid)
+
 ## Sept 2026
 
 - Initial commit 9/9/2026

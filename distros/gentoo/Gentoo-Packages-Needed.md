@@ -26,9 +26,9 @@ sudo emaint sync -r guru
 
 | Component | Minimum Version | Notes |
 | --- | --- | --- |
-| `gui-libs/wlroots` | `>= 0.20.2` (slot `:0.20`) | Required by Mango v0.17.0 and Noctalia Greeter |
-| `gui-libs/scenefx` | `>= 0.5.0` (slot `:0.5`) | Required by Mango v0.17.0 (from GURU overlay) |
-| `gui-wm/mangowc` | `v0.17.0` | Compiled from source by installer (GURU package is v0.16.x) |
+| `gui-libs/wlroots` | `>= 0.20.2` (slot `:0.20`) | Required by Mango v0.18.4 and Noctalia Greeter |
+| `gui-libs/scenefx` | `>= 0.5.0` (slot `:0.5`) | Required by Mango v0.18.4 (from GURU overlay) |
+| `gui-wm/mangowc` | `v0.18.4` | Compiled from source by installer (GURU package is v0.16.x) |
 | `gui-apps/noctalia` | `>= 5.0.0` | Desktop shell v5 (from GURU overlay) |
 | `gui-apps/quickshell` | Git master | Shell toolkit (from GURU overlay) |
 | `dev-libs/wayland-protocols` | `>= 1.45` | Required for `ext-background-effect` protocol |
@@ -89,7 +89,7 @@ media-video/ffmpeg vulkan
 | `gui-apps/quickshell` | Quickshell Desktop Shell Toolkit | `::guru` |
 | `gui-apps/uwsm` | Universal Wayland Session Manager | `::gentoo` |
 
-> **Note on Mango Compositor Version**: The Portage GURU ebuild for `gui-wm/mangowm` is currently v0.16.x. The installer compiles **Mango v0.17.0** from source directly against `gui-libs/wlroots:0.20` and `gui-libs/scenefx:0.5`. See Section 5 below for manual build instructions.
+> **Note on Mango Compositor Version**: The Portage GURU ebuild for `gui-wm/mangowm` is currently v0.16.x. The installer compiles **Mango v0.18.4** from source directly against `gui-libs/wlroots:0.20` and `gui-libs/scenefx:0.5`. See Section 5 below for manual build instructions.
 
 ### B. Wayland Display, Portals & Capture Utilities
 | Package | Description | Source / Repo |
@@ -212,9 +212,9 @@ sudo emerge --ask --getbinpkg=y --binpkg-respect-use=y \
 
 ---
 
-## 5. Compiling Mango Compositor v0.17.0 from Source
+## 5. Compiling Mango Compositor v0.18.4 from Source
 
-Because Gentoo's GURU repository is currently at v0.16.x, Mango v0.17.0 should be compiled from source:
+Because Gentoo's GURU repository is currently at v0.16.x, Mango v0.18.4 should be compiled from source:
 
 ### 1. Install Build Dependencies
 ```bash
@@ -241,8 +241,8 @@ sudo emerge --ask --getbinpkg=y --binpkg-respect-use=y \
 
 ### 2. Clone and Compile
 ```bash
-git clone --depth=1 --branch 0.17.0 https://github.com/mangowm/mango.git /tmp/mango-0.17.0
-cd /tmp/mango-0.17.0
+git clone --depth=1 --branch 0.18.4 https://github.com/mangowm/mango.git /tmp/mango-0.18.4
+cd /tmp/mango-0.18.4
 meson setup build --prefix=/usr/local
 ninja -C build
 sudo ninja -C build install

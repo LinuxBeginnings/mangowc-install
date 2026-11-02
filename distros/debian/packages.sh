@@ -117,8 +117,8 @@ install_mango() {
         return 0
     fi
 
-    # Debian Forky (14) / Sid (unstable): Compile Mango v0.17 from source
-    log_info "Debian Forky/Sid detected: Compiling Mango compositor v0.17.0 from source..."
+    # Debian Forky (14) / Sid (unstable): Compile Mango v0.18.4 from source
+    log_info "Debian Forky/Sid detected: Compiling Mango compositor v0.18.4 from source..."
     local build_deps=(
         meson ninja-build pkg-config git gcc g++
         libwayland-dev wayland-protocols
@@ -163,9 +163,9 @@ install_mango() {
         sudo ldconfig
     fi
 
-    # Build and install mango 0.17.0 from source
-    log_info "Building mango 0.17.0 from source..."
-    git clone --depth=1 --branch 0.17.0 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
+    # Build and install mango 0.18.4 from source
+    log_info "Building mango 0.18.4 from source..."
+    git clone --depth=1 --branch 0.18.4 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
     cd "${tmp_dir}/mango"
     PKG_CONFIG_PATH="${PKG_CONFIG_PATH}" \
         meson setup build --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"

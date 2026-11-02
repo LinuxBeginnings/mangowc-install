@@ -86,7 +86,7 @@ install_mango() {
     mkdir -p "${tmp_dir}"
     export PKG_CONFIG_PATH="/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 
-    # Build and install wlroots 0.20 if missing (mango >= 0.17 requires it)
+    # Build and install wlroots 0.20 if missing (mango >= 0.18 requires it)
     if [[ ! -f /usr/local/lib/x86_64-linux-gnu/libwlroots-0.20.so && ! -f /usr/local/lib/libwlroots-0.20.so ]]; then
         log_info "Building wlroots 0.20.2 from source..."
         git clone --depth=1 --branch 0.20.2 https://gitlab.freedesktop.org/wlroots/wlroots.git "${tmp_dir}/wlroots" 2>&1 | tee -a "${LOG_FILE}"
@@ -112,9 +112,9 @@ install_mango() {
         sudo ldconfig
     fi
 
-    # Build and install mango 0.17.0 from source
-    log_info "Building mango 0.17.0 from source..."
-    git clone --depth=1 --branch 0.17.0 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
+    # Build and install mango 0.18.4 from source
+    log_info "Building mango 0.18.4 from source..."
+    git clone --depth=1 --branch 0.18.4 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
     cd "${tmp_dir}/mango"
     PKG_CONFIG_PATH="${PKG_CONFIG_PATH}" \
         meson setup build --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"

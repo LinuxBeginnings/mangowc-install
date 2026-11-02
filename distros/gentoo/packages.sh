@@ -112,13 +112,13 @@ install_mango() {
     if [[ "${force}" -ne 1 ]] && (command -v mango >/dev/null 2>&1 || command -v mangowc >/dev/null 2>&1); then
         local ver
         ver="$((mango -v 2>&1 || mangowc -v 2>&1 || echo "") | head -n1)"
-        if [[ "${ver}" =~ 0\.17 ]]; then
-            log_ok "Mango compositor v0.17.0 already installed (${ver})."
+        if [[ "${ver}" =~ 0\.18 ]]; then
+            log_ok "Mango compositor v0.18.4 already installed (${ver})."
             return 0
         fi
     fi
 
-    log_info "Compiling Mango compositor v0.17.0 from source..."
+    log_info "Compiling Mango compositor v0.18.4 from source..."
     local build_deps=(
         dev-build/meson
         dev-build/ninja
@@ -146,8 +146,8 @@ install_mango() {
     local tmp_dir="/tmp/mango-install-$$"
     mkdir -p "${tmp_dir}"
 
-    log_info "Cloning mango repository (tag 0.17.0)..."
-    git clone --depth=1 --branch 0.17.0 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
+    log_info "Cloning mango repository (tag 0.18.4)..."
+    git clone --depth=1 --branch 0.18.4 https://github.com/mangowm/mango.git "${tmp_dir}/mango" 2>&1 | tee -a "${LOG_FILE}"
     cd "${tmp_dir}/mango"
     meson setup build --prefix=/usr/local 2>&1 | tee -a "${LOG_FILE}"
     ninja -C build 2>&1 | tee -a "${LOG_FILE}"
@@ -198,7 +198,7 @@ SESSION_EOF
     sudo ln -sfn /usr/local/bin/mango-session /usr/bin/mango-session
     sudo ln -sfn /usr/local/bin/mmsg /usr/bin/mmsg 2>/dev/null || true
     sudo ldconfig 2>/dev/null || true
-    log_ok "Mango compositor v0.17.0 installed successfully to /usr/local/bin/mango."
+    log_ok "Mango compositor v0.18.4 installed successfully to /usr/local/bin/mango."
 
     rm -rf "${tmp_dir}"
 }

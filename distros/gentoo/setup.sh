@@ -43,7 +43,7 @@ gentoo_compatibility_warning() {
     echo -e "${magenta}${bold}  ⚙️  MINIMUM COMPONENT VERSIONS & PREREQUISITES:${reset}"
     echo -e "      • ${bold}gui-libs/wlroots:0.20${reset}     >= 0.20.2 (wlroots 0.20 API required)"
     echo -e "      • ${bold}gui-libs/scenefx:0.5${reset}      >= 0.5.0 (from GURU overlay)"
-    echo -e "      • ${bold}gui-wm/mangowc${reset}            v0.17.0 (compiled from source by this installer)"
+    echo -e "      • ${bold}gui-wm/mangowc${reset}            v0.18.4 (compiled from source by this installer)"
     echo -e "      • ${bold}gui-apps/noctalia${reset}         >= 5.0.0 (from GURU overlay)"
     echo -e "      • ${bold}gui-apps/quickshell${reset}       Git master (from GURU overlay)"
     echo -e "      • ${bold}dev-libs/wayland-protocols${reset} >= 1.45 (for ext-background-effect protocol)"
